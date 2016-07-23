@@ -1,3 +1,0 @@
-"""
-compute stock index
-"""
