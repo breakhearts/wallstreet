@@ -11,7 +11,7 @@ with open("requirements.txt") as f:
 setup(
     name = "wallstreet",
     version = "0.1",
-    packages = find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
+    packages = find_packages(exclude=["*.test", "*.test.*", "test.*", "test"]),
     entry_points = {
         "console_scripts" : [
             'wallstreet = wallstreet.bin.__main__:main'
