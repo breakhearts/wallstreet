@@ -36,4 +36,4 @@ class StockDay(object):
         return self.low * self.adj_factor
 
     def price_change(self, last_stock_day):
-        return last_stock_day and (self.adj_close - last_stock_day.adj_close)/ last_stock_day.adj_close or 0
+        return last_stock_day and (self.adj_close - last_stock_day.adj_close) / last_stock_day.adj_close or 0
