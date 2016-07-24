@@ -4,8 +4,9 @@ data structure and utility functions
 
 
 class StockInfo(object):
-    def __init__(self, **kwargs):
-        self.symbol = kwargs["symbol"]
+    def __init__(self, symbol, exchange):
+        self.symbol = symbol
+        self.exchange = exchange
 
 
 class StockDay(object):

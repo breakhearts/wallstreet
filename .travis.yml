@@ -6,6 +6,8 @@ before_install:
   - pip install codecov
 services:
   - redis
+addons:
+  mariadb: '10.0'
 install:
   - "pip install -e ."
   - "pip install -r requirements.txt"
