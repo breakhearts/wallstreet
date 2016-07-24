@@ -1,0 +1,39 @@
+"""
+data structure and utility functions
+"""
+
+
+class StockInfo(object):
+    def __init__(self, **kwargs):
+        self.symbol = kwargs["symbol"]
+
+
+class StockDay(object):
+    def __init__(self, symbol, date, open, close, high, low, volume, adj_factor):
+        self.symbol = symbol
+        self.date = date
+        self.open = open
+        self.close = close
+        self.high = high
+        self.low = low
+        self.volume = volume
+        self.adj_factor = adj_factor
+
+    @property
+    def adj_open(self):
+        return self.open * self.adj_factor
+
+    @property
+    def adj_close(self):
+        return self.close * self.adj_factor
+
+    @property
+    def adj_high(self):
+        return self.high * self.adj_factor
+
+    @property
+    def adj_low(self):
+        return self.low * self.adj_factor
+
+    def price_change(self, last_stock_day):
+        return last_stock_day and (self.adj_close - last_stock_day.adj_close) / last_stock_day.adj_close or 0
