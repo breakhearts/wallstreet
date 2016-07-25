@@ -9,9 +9,10 @@ from wallstreet import base
 
 
 class StockInfoStorage(object):
-    def save(self, stock_info):
+    def save(self, stock_infos):
         """
         save stock_info
+        :parm stock_infos:StockInfo object or list
         """
         raise NotImplementedError
 
@@ -23,9 +24,10 @@ class StockInfoStorage(object):
 
 
 class StockDayStorage(object):
-    def save(self, stock_day):
+    def save(self, stock_days):
         """
         save stock_day
+        :parm stock_days:StockDay object or list
         """
         raise NotImplementedError
 
@@ -38,30 +40,36 @@ class StockDayStorage(object):
 Base = declarative_base()
 
 
+def create_sql_engine_and_session_cls(url):
+    engine = create_engine(url)
+    session_cls = sessionmaker(engine)
+    return engine, session_cls
+
+
 class SqlStorage(object):
-    def __init__(self, url, shared_engine=None):
-        if shared_engine:
-            self.engine = shared_engine
-        else:
-            self.engine = create_engine(url)
-        self.Session = sessionmaker(bind=self.engine)
+    def __init__(self, shared_engine, session_cls):
+        self.engine = shared_engine
+        self.Session = session_cls
 
 
 class StockInfo(Base):
     __tablename__ = "stock_info"
-    symbol = Column(String, primary_key=True)
-    exchange = Column(String)
+    symbol = Column(String(32), primary_key=True)
+    exchange = Column(String(32))
 
 
 class StockInfoSqlStorage(StockInfoStorage, SqlStorage):
-    def save(self, stock_info):
+    def save(self, stock_infos):
+        if not isinstance(stock_infos, list):
+            stock_infos = [stock_infos]
         session = self.Session()
-        old_stock_info = session.query(StockInfo).filter_by(symbol=stock_info.symbol).first()
-        if old_stock_info:
-            old_stock_info.symbol = stock_info.symbol
-            old_stock_info.exchange = stock_info.exchange
-        else:
-            session.add(StockInfo(symbol=stock_info.symbol, exchange=stock_info.exchange))
+        for stock_info in stock_infos:
+            old_stock_info = session.query(StockInfo).filter_by(symbol=stock_info.symbol).first()
+            if old_stock_info:
+                old_stock_info.symbol = stock_info.symbol
+                old_stock_info.exchange = stock_info.exchange
+            else:
+                session.add(StockInfo(symbol=stock_info.symbol, exchange=stock_info.exchange))
         session.commit()
 
     def load_all(self):
@@ -75,8 +83,8 @@ class StockInfoSqlStorage(StockInfoStorage, SqlStorage):
 class StockDay(Base):
     __tablename__ = "stock_day"
     id = Column(Integer, primary_key=True)
-    symbol = Column(String)
-    date = Column(String)
+    symbol = Column(String(32))
+    date = Column(String(10))
     open = Column(Float)
     close = Column(Float)
     high = Column(Float)
@@ -86,25 +94,37 @@ class StockDay(Base):
 
 
 class StockDaySqlStorage(StockDayStorage, SqlStorage):
-    def save(self, stock_day):
+    def save(self, stock_days):
+        if not isinstance(stock_days, list):
+            stock_days = [stock_days]
         session = self.Session()
-        old_stock_info = session.query(StockInfo).filter_by(symbol=stock_day.symbol, date=stock_day.date).first()
-        if old_stock_info:
-            for k, v in stock_day:
-                setattr(old_stock_info, k, v)
-        else:
-            session.add(StockInfo(**stock_day.__dict__))
+        for stock_day in stock_days:
+            old_stock_day = session.query(StockDay).\
+                filter(StockDay.symbol == stock_day.symbol).filter(StockDay.date == stock_day.date).first()
+            if old_stock_day:
+                for k, v in stock_day:
+                    setattr(old_stock_day, k, v)
+            else:
+                session.add(StockDay(**stock_day.__dict__))
         session.commit()
 
     def load(self, symbol, start_date=None, end_date=None):
         session = self.Session()
-        records = session.query(StockDay)\
-            .filter(StockDay.symbol == symbol).filter(StockDay.date >= start_date).filter(StockDay <= end_date)
+        records = session.query(StockDay).filter(StockDay.symbol == symbol)
+        if start_date:
+            records = records.filter(StockDay.date >= start_date)
+        if end_date:
+            records = records.filter(StockDay.date <= end_date)
         ret = []
         for t in records:
             ret.append(base.StockDay(t.symbol, t.date, t.open, t.close, t.high, t.low, t.volume, t.adj_factor))
         return ret
 
 
+def create_sql_table(engine):
+    Base.metadata.create_all(engine)
 
+
+def drop_sql_table(engine):
+    Base.metadata.drop_all(engine)
 
