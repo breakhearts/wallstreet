@@ -11,5 +11,7 @@ addons:
 install:
   - "pip install -e ."
   - "pip install -r requirements.txt"
+before_script:
+  - mysql -e 'create database wallstreet_test;'
 script:
   - py.test
