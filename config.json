@@ -1,0 +1,6 @@
+{
+    "celery":{
+        "broker_url": "redis://192.168.1.103:6379/0",
+        "celery_result_backend": "redis://192.168.1.103:6379/0"
+    }
+}

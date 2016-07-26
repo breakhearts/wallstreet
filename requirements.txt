@@ -2,3 +2,5 @@ pytest
 requests>=2.10.0
 SQLAlchemy>=1.0.14
 PyMySQL>=0.7.5
+celery>=3.1.23
+redis>=2.10.5
