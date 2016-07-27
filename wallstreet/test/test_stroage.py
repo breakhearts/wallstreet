@@ -1,7 +1,7 @@
 import pytest
 from wallstreet.storage import *
 from wallstreet import base
-
+from datetime import datetime
 
 @pytest.fixture(scope="module")
 def engine_and_session_cls(request):
@@ -23,18 +23,21 @@ class TestStockInfoSqlStorage:
         storage.save([base.StockInfo("BABA", "nasdaq"), base.StockInfo("QIHU", "nasdaq")])
         t = storage.load_all()
         assert len(t) == 3
+        t = storage.load("BABA")
+        assert t.symbol == "BABA"
 
 
 class TestStockDaySqlStorage:
     def test_save_load(self, engine_and_session_cls):
         engine, session_cls = engine_and_session_cls
         storage = StockDaySqlStorage(engine, session_cls)
-        storage.save(base.StockDay("BIDU", "2015-02-13", 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0))
-        storage.save([base.StockDay("BIDU", "2015-02-14", 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0),
-                      base.StockDay("BIDU", "2015-02-15", 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0)])
-        storage.save(base.StockDay("BIDU", "2015-02-16", 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0))
-        storage.save(base.StockDay("BIDU", "2015-02-17", 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0))
-        storage.save(base.StockDay("BABA", "2015-02-13", 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0))
-        storage.save(base.StockDay("BABA", "2015-02-14", 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0))
-        t = storage.load("BIDU", "2015-02-13", "2015-02-15")
+        storage.save(base.StockDay("BIDU", datetime(2015, 2, 13), 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0))
+        storage.save(base.StockDay("BIDU", datetime(2015, 2, 13), 13.1230, 21.1234, 22.12312, 32.1234, 1022313, 1.0))
+        storage.save([base.StockDay("BIDU", datetime(2015, 2, 14), 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0),
+                      base.StockDay("BIDU", datetime(2015, 2, 15), 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0)])
+        storage.save(base.StockDay("BIDU", datetime(2015, 2, 16), 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0))
+        storage.save(base.StockDay("BIDU", datetime(2015, 2, 17), 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0))
+        storage.save(base.StockDay("BABA", datetime(2015, 2, 18), 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0))
+        storage.save(base.StockDay("BABA", datetime(2015, 2, 14), 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0))
+        t = storage.load("BIDU", datetime(2015, 2, 13), datetime(2015, 2, 15))
         assert len(t) == 3

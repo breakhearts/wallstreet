@@ -1,6 +1,7 @@
 from __future__ import absolute_import
-from datetime import datetime, timedelta
+from datetime import datetime
 from wallstreet.base import StockDay
+from dateutil.parser import parse
 
 
 class HistoryDataAPI(object):
@@ -36,5 +37,5 @@ class YahooHistoryDataAPI(HistoryDataAPI):
         for line in content.splitlines()[1:]:
             t = line.split(",")
             if len(t) == 7:
-                data.append(StockDay(stock, *t))
+                data.append(StockDay(stock.upper(), parse(t[0]), *t[1:]))
         return data

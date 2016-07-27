@@ -1,12 +1,14 @@
 """
 data structure and utility functions
 """
+from datetime import datetime, timedelta
 
 
 class StockInfo(object):
-    def __init__(self, symbol, exchange):
+    def __init__(self, symbol, exchange, last_update_date=datetime.min):
         self.symbol = symbol
         self.exchange = exchange
+        self.last_update_date = last_update_date
 
 
 class StockDay(object):
@@ -38,3 +40,12 @@ class StockDay(object):
 
     def price_change(self, last_stock_day):
         return last_stock_day and (self.adj_close - last_stock_day.adj_close) / last_stock_day.adj_close or 0
+
+
+def get_next_day_str(today):
+    """
+    :param today: datetime of today
+    :return: str of next day
+    """
+    start_date = today + timedelta(days=1)
+    return start_date.strftime("%Y%m%d")

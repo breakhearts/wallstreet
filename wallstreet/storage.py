@@ -3,7 +3,7 @@ storage
 """
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, Integer, String, Float, DateTime
 from sqlalchemy.orm import sessionmaker
 from wallstreet import base
 
@@ -56,6 +56,7 @@ class StockInfo(Base):
     __tablename__ = "stock_info"
     symbol = Column(String(32), primary_key=True)
     exchange = Column(String(32))
+    last_update_date = Column(DateTime)
 
 
 class StockInfoSqlStorage(StockInfoStorage, SqlStorage):
@@ -66,17 +67,22 @@ class StockInfoSqlStorage(StockInfoStorage, SqlStorage):
         for stock_info in stock_infos:
             old_stock_info = session.query(StockInfo).filter_by(symbol=stock_info.symbol).first()
             if old_stock_info:
-                old_stock_info.symbol = stock_info.symbol
-                old_stock_info.exchange = stock_info.exchange
+                for k, v in stock_info.__dict__.items():
+                    setattr(old_stock_info, k, v)
             else:
                 session.add(StockInfo(symbol=stock_info.symbol, exchange=stock_info.exchange))
         session.commit()
+
+    def load(self, symbol):
+        session = self.Session()
+        t = session.query(StockInfo).filter(StockInfo.symbol == symbol).first()
+        return t and base.StockInfo(t.symbol, t.exchange, t.last_update_date) or None
 
     def load_all(self):
         session = self.Session()
         ret = []
         for t in session.query(StockInfo):
-            ret.append(base.StockInfo(t.symbol, t.exchange))
+            ret.append(base.StockInfo(t.symbol, t.exchange, t.last_update_date))
         return ret
 
 
@@ -84,7 +90,7 @@ class StockDay(Base):
     __tablename__ = "stock_day"
     id = Column(Integer, primary_key=True)
     symbol = Column(String(32))
-    date = Column(String(10))
+    date = Column(DateTime)
     open = Column(Float)
     close = Column(Float)
     high = Column(Float)
@@ -102,7 +108,7 @@ class StockDaySqlStorage(StockDayStorage, SqlStorage):
             old_stock_day = session.query(StockDay).\
                 filter(StockDay.symbol == stock_day.symbol).filter(StockDay.date == stock_day.date).first()
             if old_stock_day:
-                for k, v in stock_day:
+                for k, v in stock_day.__dict__.items():
                     setattr(old_stock_day, k, v)
             else:
                 session.add(StockDay(**stock_day.__dict__))
