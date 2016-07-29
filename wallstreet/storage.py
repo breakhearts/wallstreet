@@ -70,12 +70,14 @@ class StockInfoSqlStorage(StockInfoStorage, SqlStorage):
                 for k, v in stock_info.__dict__.items():
                     setattr(old_stock_info, k, v)
             else:
-                session.add(StockInfo(symbol=stock_info.symbol, exchange=stock_info.exchange))
+                session.add(StockInfo(symbol=stock_info.symbol, exchange=stock_info.exchange,
+                                      last_update_date=stock_info.last_update_date))
         session.commit()
 
     def load(self, symbol):
         session = self.Session()
         t = session.query(StockInfo).filter(StockInfo.symbol == symbol).first()
+        session.commit()
         return t and base.StockInfo(t.symbol, t.exchange, t.last_update_date) or None
 
     def load_all(self):
@@ -83,6 +85,7 @@ class StockInfoSqlStorage(StockInfoStorage, SqlStorage):
         ret = []
         for t in session.query(StockInfo):
             ret.append(base.StockInfo(t.symbol, t.exchange, t.last_update_date))
+        session.commit()
         return ret
 
 
@@ -124,6 +127,7 @@ class StockDaySqlStorage(StockDayStorage, SqlStorage):
         ret = []
         for t in records:
             ret.append(base.StockDay(t.symbol, t.date, t.open, t.close, t.high, t.low, t.volume, t.adj_factor))
+        session.commit()
         return ret
 
 
@@ -133,4 +137,3 @@ def create_sql_table(engine):
 
 def drop_sql_table(engine):
     Base.metadata.drop_all(engine)
-

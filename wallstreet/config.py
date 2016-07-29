@@ -10,6 +10,10 @@ def get(section, key):
     return config[section][key]
 
 
+def set_config(section, key, value):
+    config[section][key] = value
+
+
 def get_int(section, key):
     return int(get(section, key))
 

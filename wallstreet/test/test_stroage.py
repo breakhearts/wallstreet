@@ -1,13 +1,19 @@
+from __future__ import absolute_import
 import pytest
 from wallstreet.storage import *
 from wallstreet import base
 from datetime import datetime
 
+
 @pytest.fixture(scope="module")
 def engine_and_session_cls(request):
     engine, session_cls = create_sql_engine_and_session_cls("mysql+pymysql://root@localhost/wallstreet_test")
-    drop_sql_table(engine)
     create_sql_table(engine)
+
+    def teardown():
+        drop_sql_table(engine)
+    request.addfinalizer(teardown)
+
     return engine, session_cls
 
 
@@ -20,6 +26,7 @@ class TestStockInfoSqlStorage:
         t = storage.load_all()
         assert len(t) == 1
         assert t[0].exchange == 'sz'
+        assert t[0].last_update_date == datetime.min
         storage.save([base.StockInfo("BABA", "nasdaq"), base.StockInfo("QIHU", "nasdaq")])
         t = storage.load_all()
         assert len(t) == 3

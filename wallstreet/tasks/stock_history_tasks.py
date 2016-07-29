@@ -2,18 +2,21 @@ from __future__ import absolute_import
 from celery import Task
 from wallstreet.crawel.fetcher import RequestsFetcher
 from wallstreet.crawel.stockapi import YahooHistoryDataAPI
-from wallstreet.storage import StockInfoSqlStorage, StockDaySqlStorage
 from wallstreet.tasks.celery import app
 from wallstreet import base
+from wallstreet.tasks.stock_storage_tasks import save_stock_day, load_all_stock_info
 
 
 @app.task
-def get_all_stock_history():
-    stock_info_storage = StockInfoSqlStorage()
-    stock_infos = stock_info_storage.load_all()
-    for stock_info in stock_infos:
-        get_stock_history.apply_async(get_stock_history, stock_infos.symbol,
-                                      base.get_next_day_str(stock_info.last_update_date))
+def load_stocks():
+    load_all_stock_info.apply_async(link=get_all_stock_history.s())
+
+
+@app.task
+def get_all_stock_history(stocks):
+    for stock_info in stocks:
+        get_stock_history.apply_async((stock_info.symbol, base.get_next_day_str(stock_info.last_update_date)),
+                                      link=save_stock_day.s())
 
 
 class StockHistoryTasks(Task):
@@ -35,4 +38,3 @@ def get_stock_history(self, symbol, start_date=None, end_date=None):
         return api.parse_ret(symbol, content.decode("utf-8"))
     except Exception as exc:
         raise self.retry(exc=exc)
-
