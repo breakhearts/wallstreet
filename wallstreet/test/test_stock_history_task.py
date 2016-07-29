@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import pytest
 from wallstreet.tasks.stock_history_tasks import *
-from datetime import datetime
+from datetime import datetime, timedelta
 from wallstreet.storage import *
 from wallstreet.test.wrap_celery import app, engine, Session
 
@@ -26,8 +26,8 @@ def test_stock_history_task():
 def test_get_all_stock_history(engine_and_session_cls):
     # insert data
     storage = StockInfoSqlStorage(engine, Session)
-    storage.save(base.StockInfo("BIDU", "nasdaq", datetime(2015, 2, 20)))
-    storage.save(base.StockInfo("BABA", "nasdaq", datetime(2015, 2, 20)))
+    storage.save(base.StockInfo("BIDU", "nasdaq", datetime.today() - timedelta(days=7)))
+    storage.save(base.StockInfo("BABA", "nasdaq", datetime.today() - timedelta(days=7)))
     load_stocks()
     # check data
     storage = StockDaySqlStorage(engine, Session)
