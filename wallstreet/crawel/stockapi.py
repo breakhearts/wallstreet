@@ -1,14 +1,30 @@
 from __future__ import absolute_import
 from datetime import datetime
-from wallstreet.base import StockDay
+from wallstreet.base import StockDay, StockInfo
 from dateutil.parser import parse
+
+
+class StockInfoAPI(object):
+    def get_url_params(self, exchange):
+        """
+        :param exchange: trade exchange
+        :return: url, method, headers, data
+        """
+        raise NotImplementedError
+
+    def parse_ret(self, content):
+        """
+        :param content: http response content
+        :return: StockInfo list
+        """
+        raise NotImplementedError
 
 
 class HistoryDataAPI(object):
     def get_url_params(self, stock, start_date=None, end_date=None):
         """
-        get api url adn parameters
-        :returns url, method, headers, data
+        get api url parameters
+        :returns: url, method, headers, data
         """
         raise NotImplementedError
 
@@ -18,6 +34,21 @@ class HistoryDataAPI(object):
         :return StockDay list
         """
         raise NotImplementedError
+
+
+class NasdaqStockInfoAPI(StockInfoAPI):
+    def get_url_params(self, exchange):
+        query = "http://www.nasdaq.com/screening/companies-by-industry.aspx?exchange={0}&render=download"\
+            .format(exchange)
+        return query, "GET", {}, {}
+
+    def parse_ret(self, exchange, content):
+        data = []
+        for line in content.splitlines()[1:]:
+            t = [x.strip('"') for x in line.split('",')]
+            symbol, name, last_sale, market_cap, adr_tso, ipo_year, sector, industry, summary_quote = t[:9]
+            data.append(StockInfo(symbol, exchange))
+        return data
 
 
 class YahooHistoryDataAPI(HistoryDataAPI):

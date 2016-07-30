@@ -37,3 +37,16 @@ def test_get_all_stock_history(engine_and_session_cls):
     t = storage.load("BABA")
     assert len(t) > 0
     assert t[0].symbol == "BABA"
+
+
+def test_update_stock_info():
+    t = update_stock_info("NASDAQ")
+    assert len(t) > 100
+    assert t[0].exchange == "NASDAQ"
+
+
+def test_update_all_stock_info():
+    update_all_stock_info()
+    storage = StockInfoSqlStorage(engine, Session)
+    t = storage.load_all()
+    assert len(t) > 1000

@@ -1,10 +1,31 @@
 from __future__ import absolute_import
 from celery import Task
 from wallstreet.crawel.fetcher import RequestsFetcher
-from wallstreet.crawel.stockapi import YahooHistoryDataAPI
+from wallstreet.crawel.stockapi import YahooHistoryDataAPI, NasdaqStockInfoAPI
 from wallstreet.tasks.celery import app
 from wallstreet import base
-from wallstreet.tasks.stock_storage_tasks import save_stock_day, load_all_stock_info
+from wallstreet.tasks.stock_storage_tasks import save_stock_day, load_all_stock_info, save_stock_info
+
+
+@app.task
+def update_all_stock_info():
+    update_stock_info.apply_async(("NASDAQ",), link=save_stock_info.s())
+    update_stock_info.apply_async(("NYSE",), link=save_stock_info.s())
+    update_stock_info.apply_async(("AMEX",), link=save_stock_info.s())
+
+
+@app.task(bind=True)
+def update_stock_info(self, exchange):
+    api = NasdaqStockInfoAPI()
+    url, method, headers, data = api.get_url_params(exchange)
+    fetcher = RequestsFetcher()
+    try:
+        status_code, content = fetcher.fetch(url, method, headers, data)
+        if status_code != 200:
+            raise self.retry(exc=status_code)
+        return api.parse_ret(exchange, content.decode("utf-8"))
+    except Exception as exc:
+        raise self.retry(exc=exc)
 
 
 @app.task

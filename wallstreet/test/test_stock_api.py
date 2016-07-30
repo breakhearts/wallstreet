@@ -4,7 +4,7 @@ from wallstreet.crawel.fetcher import RequestsFetcher
 from datetime import datetime
 
 
-class TestYahooStockAPI:
+class TestYahooStockHistoryAPI:
     def test_get_url_params(self):
         api = stockapi.YahooHistoryDataAPI()
         url, method, headers, data = api.get_url_params("BIDU", start_date="20150217", end_date="20150914")
@@ -25,3 +25,13 @@ class TestYahooStockAPI:
         day_last = days[0]
         assert day_last.symbol == "BIDU"
         assert day_last.date == datetime(2015, 2, 20)
+
+
+class TestNasdaqStockInfoAPI:
+    def test_all(self):
+        api = stockapi.NasdaqStockInfoAPI()
+        url, method, headers, data = api.get_url_params("NASDAQ")
+        fetcher = RequestsFetcher()
+        status_code, content = fetcher.fetch(url, method, headers, data)
+        stock_infos = api.parse_ret("NASDAQ", content.decode('utf-8'))
+        assert len(stock_infos) > 100
