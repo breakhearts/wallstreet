@@ -11,6 +11,7 @@ import logging.handlers
 import logging.config
 import select
 from wallstreet.logging import config as log_config
+from wallstreet import config
 
 
 logging.config.dictConfig(log_config.LOGGING)
@@ -65,3 +66,7 @@ class LogServer(socketserver.ThreadingTCPServer):
             if rd:
                 self.handle_request()
             abort = self.abort
+
+if __name__ == "__main__":
+    s = LogServer(config.get("log_server", "host"), config.get_int("log_server", "port"))
+    s.start()
