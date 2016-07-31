@@ -2,7 +2,7 @@
 data structure and utility functions
 """
 from datetime import datetime, timedelta
-
+import os
 
 class StockInfo(object):
     def __init__(self, symbol, exchange, last_update_date=datetime.min):
@@ -49,3 +49,19 @@ def get_next_day_str(today):
     """
     start_date = today + timedelta(days=1)
     return start_date.strftime("%Y%m%d")
+
+
+def wise_mk_dir(path):
+    if path == "":
+        return
+    if os.path.exists(path):
+        return
+    p, c = os.path.split(path)
+    if not os.path.exists(p):
+        wise_mk_dir(p)
+    os.mkdir(path)
+
+
+def wise_mk_dir_for_file(filepath):
+    p = os.path.dirname(filepath)
+    wise_mk_dir(p)
