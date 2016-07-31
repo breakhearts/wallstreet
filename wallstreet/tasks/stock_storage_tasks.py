@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from wallstreet.storage import StockDaySqlStorage, StockInfoSqlStorage
 from wallstreet.tasks.celery import app, engine, Session
 from celery.utils.log import get_task_logger
