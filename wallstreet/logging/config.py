@@ -41,18 +41,30 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'level': 'DEBUG'
         },
-        'root': {
+        'stock_history_tasks': {
             'formatter': 'normal',
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'level': "DEBUG",
-            'filename': os.path.join(LOG_ROOT, "default.log"),
+            'filename': os.path.join(LOG_ROOT, "stock_history_tasks.log"),
+            'when': "D",
+            'interval': 1
+        },
+        'stock_storage_tasks': {
+            'formatter': 'normal',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'level': "DEBUG",
+            'filename': os.path.join(LOG_ROOT, "stock_storage_tasks.log"),
             'when': "D",
             'interval': 1
         }
     },
     'loggers': {
-        'default': {
-            'handlers': ['console', 'default'],
+        'wallstreet.tasks.stock_history_tasks': {
+            'handlers': ['console', 'stock_history_tasks'],
+            'level': 'DEBUG'
+        },
+        'wallstreet.tasks.stock_storage_tasks': {
+            'handlers': ['console', 'stock_storage_tasks'],
             'level': 'DEBUG'
         }
     }
