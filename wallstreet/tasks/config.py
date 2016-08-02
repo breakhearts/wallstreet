@@ -4,7 +4,6 @@ from wallstreet import config
 from kombu import Queue, Exchange
 
 BROKER_URL = config.get("celery", "broker_url")
-CELERY_RESULT_BACKEND = config.get("celery", "celery_result_backend")
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
