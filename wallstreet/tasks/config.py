@@ -33,7 +33,7 @@ CELERY_QUEUES = (
     Queue('stock_storage_tasks', Exchange('stock_storage_tasks', type='topic'), routing_key='stock_storage_tasks.#')
 )
 
-CELERY_ROUTS = {
+CELERY_ROUTES = {
     'wallstreet.tasks.stock_history_tasks.update_all_stock_info':{
         'queue': 'stock_history_tasks',
         'routing_key': 'stock_history_tasks.update_all_stock_info'
