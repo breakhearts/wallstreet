@@ -94,3 +94,5 @@ ENV/
 # Local directories
 logs/
 data/
+
+config_local.json

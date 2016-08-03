@@ -3,7 +3,7 @@ import pytest
 from wallstreet.tasks.stock_history_tasks import *
 from datetime import datetime, timedelta
 from wallstreet.storage import *
-from wallstreet.test.wrap_celery import app, engine, Session
+from wallstreet.test.wrap_celery import engine, Session
 
 
 @pytest.fixture(scope="module")
@@ -28,7 +28,7 @@ def test_get_all_stock_history(engine_and_session_cls):
     storage = StockInfoSqlStorage(engine, Session)
     storage.save(base.StockInfo("BIDU", "nasdaq", datetime.today() - timedelta(days=7)))
     storage.save(base.StockInfo("BABA", "nasdaq", datetime.today() - timedelta(days=7)))
-    load_stocks()
+    update_all_stock_day()
     # check data
     storage = StockDaySqlStorage(engine, Session)
     t = storage.load("BIDU")

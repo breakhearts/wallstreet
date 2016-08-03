@@ -1,11 +1,13 @@
 from __future__ import absolute_import
+from wallstreet import config
 from wallstreet.tasks.task_monitor import TaskCounter
 import pytest
 
 
 @pytest.fixture(scope="module")
 def counter(request):
-    c = TaskCounter("localhost", 6379, 1)
+    c = TaskCounter(config.get_test("counter", "host"),config.get_test_int("counter", "port"),
+                    config.get_test_int("counter", "db"))
 
     def teardown():
         c.reset()

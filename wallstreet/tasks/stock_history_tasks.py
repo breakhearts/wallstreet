@@ -38,7 +38,7 @@ def update_stock_info(self, exchange):
 
 
 @app.task
-def load_stocks():
+def update_all_stock_day():
     load_all_stock_info.apply_async(link=get_all_stock_history.s())
 
 
