@@ -12,7 +12,3 @@ app = Celery("task")
 app.config_from_object("wallstreet.tasks.config")
 
 engine, Session = create_sql_engine_and_session_cls(config.get("storage", "url"))
-try:
-    task_monitor(app)
-except:
-    pass
