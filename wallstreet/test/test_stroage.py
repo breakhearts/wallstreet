@@ -3,11 +3,12 @@ import pytest
 from wallstreet.storage import *
 from wallstreet import base
 from datetime import datetime
+from wallstreet import config
 
 
 @pytest.fixture(scope="module")
 def engine_and_session_cls(request):
-    engine, session_cls = create_sql_engine_and_session_cls("mysql+pymysql://root@localhost/wallstreet_test")
+    engine, session_cls = create_sql_engine_and_session_cls(config.get_test("storage", "url"))
     create_sql_table(engine)
 
     def teardown():

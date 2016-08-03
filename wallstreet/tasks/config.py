@@ -4,7 +4,6 @@ from wallstreet import config
 from kombu import Queue, Exchange
 
 BROKER_URL = config.get("celery", "broker_url")
-CELERY_RESULT_BACKEND = config.get("celery", "celery_result_backend")
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
@@ -21,7 +20,7 @@ CELERYBEAT_SCHEDULE = {
         'schedule': crontab(hour=4, minute=0, day_of_week='1-5')
     },
     'get_all_stock_history': {
-        'task': 'wallstreet.tasks.stock_history_tasks.get_all_stock_history',
+        'task': 'wallstreet.tasks.stock_history_tasks.update_all_stock_day',
         'schedule': crontab(hour=4, minute=30, day_of_week='1-5')
     }
 }
@@ -42,9 +41,9 @@ CELERY_ROUTES = {
         'queue': 'stock_history_tasks',
         'routing_key': 'stock_history_tasks.update_stock_info'
     },
-    'wallstreet.tasks.stock_history_tasks.load_stocks': {
+    'wallstreet.tasks.stock_history_tasks.update_all_stock_day': {
         'queue': 'stock_history_tasks',
-        'routing_key': 'stock_history_tasks.load_stocks'
+        'routing_key': 'stock_history_tasks.update_all_stock_day'
     },
     'wallstreet.tasks.stock_history_tasks.get_all_stock_history': {
         'queue': 'stock_history_tasks',
