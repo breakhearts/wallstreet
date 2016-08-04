@@ -2,6 +2,9 @@ from __future__ import absolute_import
 import redis
 from collections import defaultdict, OrderedDict
 from wallstreet import config
+from celery.utils.log import get_task_logger
+
+logger = get_task_logger(__name__)
 
 
 class TaskCounter(object):
@@ -44,16 +47,19 @@ def task_monitor(app):
         state.event(event)
         task = state.tasks.get(event['uuid'])
         task_counter.failed(task.name)
+        logger.debug("name={0}".format(task.named))
 
     def on_task_succeeded(event):
         state.event(event)
         task = state.tasks.get(event['uuid'])
         task_counter.succeeded(task.name)
+        logger.debug("name={0}".format(task.name))
 
     def on_task_sent(event):
         state.event(event)
         task = state.tasks.get(event['uuid'])
         task_counter.new(task.name)
+        logger.debug("name={0}".format(task.name))
 
     with app.connection() as connection:
         recv = app.events.Receiver(connection, handlers={
