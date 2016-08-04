@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from wallstreet.storage import StockDaySqlStorage, StockInfoSqlStorage
 from wallstreet.tasks.celery import app, engine, Session
 from celery.utils.log import get_task_logger
+from wallstreet.base import StockDay, StockInfo
 
 logger = get_task_logger(__name__)
 
@@ -24,6 +25,7 @@ def save_stock_day(stock_days):
 
 @app.task
 def save_stock_info(stock_infos):
+    stock_infos = [StockInfo.from_serializable_obj(x) for x in stock_infos]
     if len(stock_infos) > 0:
         stock_info_storage = StockInfoSqlStorage(engine, Session)
         stock_info_storage.save(stock_infos)
