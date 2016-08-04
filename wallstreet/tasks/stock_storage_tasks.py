@@ -10,11 +10,12 @@ logger = get_task_logger(__name__)
 def load_all_stock_info():
     stock_info_storage = StockInfoSqlStorage(engine, Session)
     stock_infos = stock_info_storage.load_all()
-    return stock_infos
+    return [x.serializable_obj() for x in stock_infos]
 
 
 @app.task
 def save_stock_day(stock_days):
+    stock_days = [StockDay.from_serializable_obj(x) for x in stock_days]
     if len(stock_days) > 0:
         stock_day_storage = StockDaySqlStorage(engine, Session)
         stock_day_storage.save(stock_days)

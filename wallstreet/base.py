@@ -3,12 +3,26 @@ data structure and utility functions
 """
 from datetime import datetime, timedelta
 import os
+from datetime import datetime
+from dateutil.parser import parse
+
 
 class StockInfo(object):
     def __init__(self, symbol, exchange, last_update_date=datetime.min):
         self.symbol = symbol
         self.exchange = exchange
         self.last_update_date = last_update_date
+
+    def serializable_obj(self):
+        return {
+            "symbol": self.symbol,
+            "exchange": self.exchange,
+            "last_update_date": self.last_update_date.strftime("%Y-%m-%d")
+        }
+
+    @staticmethod
+    def from_serializable_obj(obj):
+        return StockInfo(symbol=obj["symbol"], exchange=obj["exchange"], "last_update_date"=parse(obj["last_update_date"]))
 
 
 class StockDay(object):
