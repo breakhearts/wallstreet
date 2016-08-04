@@ -22,7 +22,7 @@ class StockInfo(object):
 
     @staticmethod
     def from_serializable_obj(obj):
-        return StockInfo(symbol=obj["symbol"], exchange=obj["exchange"], "last_update_date"=parse(obj["last_update_date"]))
+        return StockInfo(symbol=obj["symbol"], exchange=obj["exchange"], last_update_date=parse(obj["last_update_date"]))
 
 
 class StockDay(object):
