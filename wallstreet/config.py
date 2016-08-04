@@ -6,12 +6,12 @@ config_file_path = os.path.join(os.path.dirname(__file__) + "/../config.json")
 config_local_file_path = os.path.join(os.path.dirname(__file__) + "/../config_local.json")
 with open(config_file_path, "rb") as f:
     config = json.loads(f.read().decode("utf-8"))
-with open(config_local_file_path, "rb") as f:
-    try:
+try:
+    with open(config_local_file_path, "rb") as f:
         local_config = json.loads(f.read().decode("utf-8"))
         config.update(local_config)
-    except:
-        pass
+except:
+    pass
 
 
 def get(section, key):
