@@ -43,7 +43,7 @@ def test_get_all_stock_history(engine_and_session_cls):
 
 def test_update_stock_info():
     t = update_stock_info("NASDAQ")
-    t = [StockInfo.from_serializable_obj(x) for x in t]
+    t = [base.StockInfo.from_serializable_obj(x) for x in t]
     assert len(t) > 100
     assert t[0].exchange == "NASDAQ"
 
