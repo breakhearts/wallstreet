@@ -6,6 +6,8 @@ from wallstreet.tasks.celery import app
 from wallstreet import base
 from wallstreet.tasks.stock_storage_tasks import save_stock_day, load_all_stock_info, save_stock_info
 from celery.utils.log import get_task_logger
+from wallstreet.tasks.task_monitor import task_counter
+from wallstreet.notification.notifier import email_notifier
 import traceback
 
 logger = get_task_logger(__name__)
@@ -74,3 +76,13 @@ def get_stock_history(self, symbol, start_date=None, end_date=None):
     except Exception as exc:
         logger.error(traceback.format_exc())
         raise self.retry(exc=exc)
+
+
+@app.task
+def report_tasks():
+    t = task_counter.report()
+    s = ""
+    for item, count in t.items():
+        s += "{0}\t{1}\n".format(item, count)
+    email_notifier.send_text("wallstreet daily report", s)
+    task_counter.reset()
