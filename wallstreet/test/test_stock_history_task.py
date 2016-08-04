@@ -3,6 +3,7 @@ import pytest
 from wallstreet.tasks.stock_history_tasks import *
 from datetime import datetime, timedelta
 from wallstreet.storage import *
+from wallstreet import base
 from wallstreet.test.wrap_celery import engine, Session
 
 
@@ -17,7 +18,7 @@ def engine_and_session_cls(request):
 
 def test_stock_history_task():
     days = get_stock_history("BIDU", start_date="20150218", end_date="20150220")
-    days = [StockDay.from_serializable_obj(x) for x in days]
+    days = [base.StockDay.from_serializable_obj(x) for x in days]
     assert len(days) == 3
     day_last = days[0]
     assert day_last.symbol == "BIDU"
