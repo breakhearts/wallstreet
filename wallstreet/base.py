@@ -55,6 +55,31 @@ class StockDay(object):
     def price_change(self, last_stock_day):
         return last_stock_day and (self.adj_close - last_stock_day.adj_close) / last_stock_day.adj_close or 0
 
+    def serializable_obj(self):
+        return {
+            "symbol": self.symbol,
+            "date": self.date.strftime("%Y-%m-%d"),
+            "open": self.open,
+            "close": self.close,
+            "high": self.high,
+            "low": self.low,
+            "volume": self.volume,
+            "adj_factor": self.adj_factor
+        }
+
+    @staticmethod
+    def from_serializable_obj(obj):
+        return StockDay(
+                symbol = obj["symbol"],
+                date = parse(obj["date"]),
+                open = obj["open"],
+                close = obj["close"],
+                high = obj["high"],
+                low = obj["low"],
+                volume = obj["volume"],
+                adj_factor = obj["adj_factor"]
+            )
+
 
 def get_next_day_str(today):
     """
