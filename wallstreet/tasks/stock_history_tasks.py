@@ -44,7 +44,7 @@ def update_all_stock_day():
 
 @app.task
 def get_all_stock_history(stocks):
-    stocks = [StockInfo.from_serializable_obj(x) for x in stocks]
+    stocks = [base.StockInfo.from_serializable_obj(x) for x in stocks]
     for stock_info in stocks:
         get_stock_history.apply_async((stock_info.symbol, base.get_next_day_str(stock_info.last_update_date)),
                                       link=save_stock_day.s())
