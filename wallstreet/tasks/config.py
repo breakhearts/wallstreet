@@ -4,9 +4,9 @@ from wallstreet import config
 from kombu import Queue, Exchange
 
 BROKER_URL = config.get("celery", "broker_url")
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
+#CELERY_ACCEPT_CONTENT = ['json']
+#CELERY_TASK_SERIALIZER = 'json'
+#CELERY_RESULT_SERIALIZER = 'json'
 CELERY_REDIRECT_STDOUTS_LEVEL = "info"
 CELERY_IGNORE_RESULT = True
 CELERY_DISABLE_RATE_LIMITS = True
