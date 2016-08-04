@@ -8,7 +8,7 @@ from dateutil.parser import parse
 
 
 class StockInfo(object):
-    def __init__(self, symbol, exchange, last_update_date=datetime.min):
+    def __init__(self, symbol, exchange, last_update_date=datetime(year=1970, month=1, day=1)):
         self.symbol = symbol
         self.exchange = exchange
         self.last_update_date = last_update_date
