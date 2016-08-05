@@ -44,10 +44,13 @@ class NasdaqStockInfoAPI(StockInfoAPI):
 
     def parse_ret(self, exchange, content):
         data = []
+        symbols = {}
         for line in content.splitlines()[1:]:
             t = [x.strip('"') for x in line.split('",')]
             symbol, name, last_sale, market_cap, adr_tso, ipo_year, sector, industry, summary_quote = t[:9]
-            data.append(StockInfo(symbol, exchange))
+            if symbol not in symbols:
+                data.append(StockInfo(symbol, exchange))
+                symbols[symbol] = True
         return data
 
 

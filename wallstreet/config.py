@@ -9,7 +9,6 @@ with open(config_file_path, "rb") as f:
 try:
     with open(config_local_file_path, "rb") as f:
         local_config = json.loads(f.read().decode("utf-8"))
-        config.update(local_config)
 except:
     pass
 
