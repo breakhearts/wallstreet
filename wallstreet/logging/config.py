@@ -6,11 +6,23 @@ from wallstreet import config
 LOG_ROOT = os.path.abspath(os.path.dirname(__file__) + "../../../logs")
 base.wise_mk_dir(LOG_ROOT)
 
-CELEY_LOGGING = {
+
+CELERY_LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'normal': {
+                'format': '[%(asctime)s]%(levelname)s,%(funcName)s,%(lineno)d,%(message)s'
+            },
+        },
     'handlers': {
-        'socket': {
+        'console': {
+            'formatter': 'normal',
+            'class': 'logging.StreamHandler',
+            'level': 'DEBUG'
+        },
+        'zocket': {
+            'formatter': 'normal',
             'class': 'logging.handlers.SocketHandler',
             'level': 'DEBUG',
             'host': config.get("log_server", "host"),
@@ -19,11 +31,11 @@ CELEY_LOGGING = {
     },
     'loggers': {
         'wallstreet.tasks.stock_history_tasks': {
-            'handlers:': ['socket'],
+            'handlers': ['console', 'zocket'],
             'level': 'DEBUG'
         },
         'wallstreet.tasks.stock_storage_tasks': {
-            'handlers:': ['socket'],
+            'handlers': ['console', 'zocket'],
             'level': 'DEBUG'
         }
     }

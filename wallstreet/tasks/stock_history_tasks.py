@@ -21,7 +21,7 @@ def update_all_stock_info():
     logger.debug("update all ok")
 
 
-@app.task(bind=True, max_retries=100, default_retry_delay=1)
+@app.task(bind=True, max_retries=10, default_retry_delay=30)
 def update_stock_info(self, exchange):
     api = NasdaqStockInfoAPI()
     url, method, headers, data = api.get_url_params(exchange)
@@ -60,7 +60,7 @@ class StockHistoryTasks(Task):
         pass
 
 
-@app.task(base=StockHistoryTasks, bind=True, max_retries=100, default_retry_delay=1)
+@app.task(base=StockHistoryTasks, bind=True, max_retries=3, default_retry_delay=30)
 def get_stock_history(self, symbol, start_date=None, end_date=None):
     api = YahooHistoryDataAPI()
     url, method, headers, data = api.get_url_params(symbol, start_date, end_date)
