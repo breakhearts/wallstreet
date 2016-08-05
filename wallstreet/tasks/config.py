@@ -13,7 +13,6 @@ CELERY_DISABLE_RATE_LIMITS = True
 BROKER_TRANSPORT_OPTIONS = {'fanout_prefix': True, 'fanout_patterns': True, 'visibility_timeout': 43200}
 CELERY_TIMEZONE = 'US/Eastern'
 
-
 CELERYBEAT_SCHEDULE = {
     'update_all_stock_info': {
         'task': 'wallstreet.tasks.stock_history_tasks.update_all_stock_info',

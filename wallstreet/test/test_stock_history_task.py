@@ -1,10 +1,11 @@
 from __future__ import absolute_import
 import pytest
+from wallstreet import config
+config.set_config("storage", "url", config.get_test("storage", "url"))
 from wallstreet.tasks.stock_history_tasks import *
 from datetime import datetime, timedelta
 from wallstreet.storage import *
 from wallstreet import base
-from wallstreet import config
 from wallstreet.test.wrap_celery import engine, Session
 
 

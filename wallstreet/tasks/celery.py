@@ -5,7 +5,7 @@ from wallstreet import config
 from logging.config import dictConfig
 from wallstreet.logging import config as log_config
 
-dictConfig(log_config.CELEY_LOGGING)
+dictConfig(log_config.CELERY_LOGGING)
 app = Celery("task")
 app.config_from_object("wallstreet.tasks.config")
 
