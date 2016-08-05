@@ -12,10 +12,21 @@
     "storage":{
       "db": "sql",
       "url": "mysql+pymysql://root@localhost/wallstreet",
-      "url_test": "mysql+pymysql://root@localhost/wallstreet_test",
+      "url_test": "mysql+pymysql://root@localhost/wallstreet_test"
     },
     "log_server": {
       "host": "localhost",
       "port": 9020
+    },
+    "notifier":{
+      "type": "email",
+      "host":"smtp.163.com",
+      "port":25,
+      "username": "xxx",
+      "password": "xxxxxxxx",
+      "sender": "xxx@163.com",
+      "receivers": [
+        "xxx@163.com"
+      ]
     }
 }
