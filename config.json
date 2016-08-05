@@ -11,7 +11,8 @@
     },
     "storage":{
       "db": "sql",
-      "url": "mysql+pymysql://root@localhost/wallstreet_test"
+      "url": "mysql+pymysql://root@localhost/wallstreet",
+      "url_test": "mysql+pymysql://root@localhost/wallstreet_test",
     },
     "log_server": {
       "host": "localhost",
