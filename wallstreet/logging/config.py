@@ -31,11 +31,11 @@ CELERY_LOGGING = {
     },
     'loggers': {
         'wallstreet.tasks.stock_history_tasks': {
-            'handlers': ['console', 'zocket'],
+            'handlers': ['zocket'],
             'level': 'DEBUG'
         },
         'wallstreet.tasks.stock_storage_tasks': {
-            'handlers': ['console', 'zocket'],
+            'handlers': ['zocket'],
             'level': 'DEBUG'
         }
     }
