@@ -21,7 +21,7 @@ def update_all_stock_info():
     logger.debug("update all ok")
 
 
-@app.task(bind=True)
+@app.task(bind=True, max_retries=100, default_retry_delay=1)
 def update_stock_info(self, exchange):
     api = NasdaqStockInfoAPI()
     url, method, headers, data = api.get_url_params(exchange)
