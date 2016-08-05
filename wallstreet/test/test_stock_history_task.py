@@ -4,6 +4,7 @@ from wallstreet.tasks.stock_history_tasks import *
 from datetime import datetime, timedelta
 from wallstreet.storage import *
 from wallstreet import base
+from wallstreet import config
 from wallstreet.test.wrap_celery import engine, Session
 
 

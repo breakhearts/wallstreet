@@ -19,10 +19,12 @@ CELEY_LOGGING = {
     },
     'loggers': {
         'wallstreet.tasks.stock_history_tasks': {
-            'handlers:': ['socket']
+            'handlers:': ['socket'],
+            'level': 'DEBUG'
         },
         'wallstreet.tasks.stock_storage_tasks': {
-            'handlers:': ['socket']
+            'handlers:': ['socket'],
+            'level': 'DEBUG'
         }
     }
 }

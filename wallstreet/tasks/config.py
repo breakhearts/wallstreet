@@ -53,6 +53,10 @@ CELERY_ROUTES = {
         'queue': 'stock_history_tasks',
         'routing_key': 'stock_history_tasks.get_all_stock_history'
     },
+    'wallstreet.tasks.stock_history_tasks.get_stock_history': {
+        'queue': 'stock_history_tasks',
+        'routing_key': 'stock_history_tasks.get_stock_history'
+    },
     'wallstreet.tasks.stock_history_tasks.report_tasks': {
         'queue': 'stock_history_tasks',
         'routing_key': 'stock_history_tasks.report_tasks'

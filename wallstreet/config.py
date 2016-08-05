@@ -21,8 +21,10 @@ def get(section, key):
 
 
 def set_config(section, key, value):
-    config[section][key] = value
-
+    try:
+        local_config[section][key] = value
+    except:
+        config[section][key] = value
 
 def get_int(section, key):
     return int(get(section, key))
