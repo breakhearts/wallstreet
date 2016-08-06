@@ -29,7 +29,7 @@ def save_stock_day(stock_days):
             logger.error(traceback.format_exc())
         logger.debug("ok, symbol = {0}".format(stock_days[0].symbol))
         update_last_update_date.apply_async((symbols.popitem()[0], last_update_date))
-        
+
 
 @app.task
 def save_stock_info(stock_infos):

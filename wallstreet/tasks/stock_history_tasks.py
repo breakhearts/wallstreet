@@ -8,6 +8,7 @@ from wallstreet.tasks.stock_storage_tasks import save_stock_day, load_all_stock_
 from celery.utils.log import get_task_logger
 from wallstreet.tasks.task_monitor import task_counter
 from wallstreet.notification.notifier import email_notifier
+from celery.exceptions import Ignore
 import traceback
 
 logger = get_task_logger(__name__)
@@ -68,6 +69,8 @@ def get_stock_history(self, symbol, start_date=None, end_date=None):
     try:
         status_code, content = fetcher.fetch(url, method, headers, data)
         if status_code != 200:
+            if status_code == 404:
+                raise Ignore()
             logger.debug("status_code={0}".format(status_code))
             raise self.retry()
         ret = api.parse_ret(symbol, content.decode("utf-8"))
