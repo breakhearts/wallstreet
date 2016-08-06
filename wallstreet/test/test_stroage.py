@@ -31,8 +31,10 @@ class TestStockInfoSqlStorage:
         storage.save([base.StockInfo("BABA", "nasdaq"), base.StockInfo("QIHU", "nasdaq")])
         t = storage.load_all()
         assert len(t) == 3
+        storage.update_last_update_time("BABA", datetime(1999, 1, 1))
         t = storage.load("BABA")
         assert t.symbol == "BABA"
+        assert t.last_update_date == datetime(1999, 1, 1)
 
 
 class TestStockDaySqlStorage:

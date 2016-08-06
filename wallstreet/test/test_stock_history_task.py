@@ -41,6 +41,9 @@ def test_get_all_stock_history(engine_and_session_cls):
     t = storage.load("BABA")
     assert len(t) > 0
     assert t[0].symbol == "BABA"
+    storage = StockInfoSqlStorage(engine, Session)
+    t = storage.load('BABA')
+    assert t.last_update_date > datetime(2016, 1, 1)
 
 
 def test_update_stock_info():
