@@ -30,7 +30,7 @@ def update_stock_info(self, exchange):
         status_code, content = fetcher.fetch(url, method, headers, data)
         if status_code != 200:
             logger.debug("status_code={0}".format(status_code))
-            raise self.retry(exc=status_code)
+            raise self.retry()
         ret = api.parse_ret(exchange, content.decode("utf-8"))
         logger.debug("ok, exchange={0}, total={1}".format(exchange, len(ret)))
         return [x.serializable_obj() for x in ret]
@@ -69,7 +69,7 @@ def get_stock_history(self, symbol, start_date=None, end_date=None):
         status_code, content = fetcher.fetch(url, method, headers, data)
         if status_code != 200:
             logger.debug("status_code={0}".format(status_code))
-            raise self.retry(exc=status_code)
+            raise self.retry()
         ret = api.parse_ret(symbol, content.decode("utf-8"))
         logger.debug("ok, symbol={0}, total={1}".format(symbol, len(ret)))
         return [x.serializable_obj() for x in ret]
