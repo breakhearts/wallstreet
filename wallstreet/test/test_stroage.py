@@ -40,7 +40,6 @@ class TestStockDaySqlStorage:
         engine, session_cls = engine_and_session_cls
         storage = StockDaySqlStorage(engine, session_cls)
         storage.save(base.StockDay("BIDU", datetime(2015, 2, 13), 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0))
-        storage.save(base.StockDay("BIDU", datetime(2015, 2, 13), 13.1230, 21.1234, 22.12312, 32.1234, 1022313, 1.0))
         storage.save([base.StockDay("BIDU", datetime(2015, 2, 14), 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0),
                       base.StockDay("BIDU", datetime(2015, 2, 15), 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0)])
         storage.save(base.StockDay("BIDU", datetime(2015, 2, 16), 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0))
