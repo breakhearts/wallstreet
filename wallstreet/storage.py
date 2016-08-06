@@ -22,6 +22,13 @@ class StockInfoStorage(object):
         """
         raise NotImplementedError
 
+    def update_last_update_time(self, symbol, last_update_time):
+        """
+        :param last_update_time:
+        :return:
+        """
+        raise NotImplementedError
+
 
 class StockDayStorage(object):
     def save(self, stock_days):
@@ -87,6 +94,13 @@ class StockInfoSqlStorage(StockInfoStorage, SqlStorage):
             ret.append(base.StockInfo(t.symbol, t.exchange, t.last_update_date))
         session.commit()
         return ret
+
+    def update_last_update_time(self, symbol, last_update_time):
+        session = self.Session()
+        t = session.query(StockInfo).filter(StockInfo.symbol == symbol).first()
+        if t:
+            t.last_update_date = last_update_time
+            session.commit()
 
 
 class StockDay(Base):

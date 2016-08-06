@@ -47,7 +47,7 @@ def task_monitor(app):
         state.event(event)
         task = state.tasks.get(event['uuid'])
         task_counter.failed(task.name)
-        logger.debug("name={0}".format(task.named))
+        logger.debug("name={0}".format(task.name))
 
     def on_task_succeeded(event):
         state.event(event)
