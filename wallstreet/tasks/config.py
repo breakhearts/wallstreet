@@ -64,6 +64,10 @@ CELERY_ROUTES = {
         'queue': 'stock_storage_tasks',
         'routing_key': 'stock_storage_tasks.load_all_stock_info'
     },
+    'wallstreet.tasks.stock_storage_tasks.update_last_update_date': {
+        'queue': 'stock_storage_tasks',
+        'routing_key': 'stock_storage_tasks.update_last_update_date'
+    },
     'wallstreet.tasks.stock_storage_tasks.save_stock_day': {
         'queue': 'stock_storage_tasks',
         'routing_key': 'stock_storage_tasks.save_stock_day'
