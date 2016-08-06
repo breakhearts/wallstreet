@@ -4,6 +4,8 @@ from wallstreet.tasks.celery import app, engine, Session
 from celery.utils.log import get_task_logger
 from wallstreet.base import StockDay, StockInfo
 import traceback
+from dateutil.parser import parse
+from datetime import datetime
 
 logger = get_task_logger(__name__)
 
@@ -28,7 +30,7 @@ def save_stock_day(stock_days):
         except Exception as exc:
             logger.error(traceback.format_exc())
         logger.debug("ok, symbol = {0}".format(stock_days[0].symbol))
-        update_last_update_date.apply_async((symbols.popitem()[0], last_update_date))
+        update_last_update_date.apply_async((symbols.popitem()[0], last_update_date.strftime("%Y-%m-%d")))
 
 
 @app.task
@@ -45,6 +47,7 @@ def save_stock_info(stock_infos):
 
 @app.task
 def update_last_update_date(symbol, last_update_date):
+    last_update_date = parse(last_update_date)
     stock_info_storage = StockInfoSqlStorage(engine, Session)
     stock_info_storage.update_last_update_time(symbol, last_update_date)
     logger.debug("ok, symbol = {0}".format(symbol))
