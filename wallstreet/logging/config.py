@@ -21,7 +21,7 @@ CELERY_LOGGING = {
             'class': 'logging.StreamHandler',
             'level': 'DEBUG'
         },
-        'zocket': {
+        'socket': {
             'formatter': 'normal',
             'class': 'logging.handlers.SocketHandler',
             'level': 'DEBUG',
@@ -31,11 +31,15 @@ CELERY_LOGGING = {
     },
     'loggers': {
         'wallstreet.tasks.stock_history_tasks': {
-            'handlers': ['zocket'],
+            'handlers': ['socket'],
             'level': 'DEBUG'
         },
         'wallstreet.tasks.stock_storage_tasks': {
-            'handlers': ['zocket'],
+            'handlers': ['socket'],
+            'level': 'DEBUG'
+        },
+        'wallstreet.tasks.task_monitor': {
+            'handlers': ['console'],
             'level': 'DEBUG'
         }
     }
