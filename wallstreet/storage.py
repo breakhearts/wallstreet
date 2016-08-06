@@ -3,7 +3,7 @@ storage
 """
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Float, DateTime
+from sqlalchemy import Column, Integer, String, Float, DateTime, Index
 from sqlalchemy.orm import sessionmaker
 from wallstreet import base
 
@@ -100,6 +100,7 @@ class StockDay(Base):
     low = Column(Float)
     volume = Column(Integer)
     adj_factor = Column(Float)
+    __table_args__ = (Index("symbol_date_index", "symbol", "date"), )
 
 
 class StockDaySqlStorage(StockDayStorage, SqlStorage):
@@ -108,13 +109,14 @@ class StockDaySqlStorage(StockDayStorage, SqlStorage):
             stock_days = [stock_days]
         session = self.Session()
         for stock_day in stock_days:
-            old_stock_day = session.query(StockDay).\
-                filter(StockDay.symbol == stock_day.symbol).filter(StockDay.date == stock_day.date).first()
-            if old_stock_day:
-                for k, v in stock_day.__dict__.items():
-                    setattr(old_stock_day, k, v)
-            else:
-                session.add(StockDay(**stock_day.__dict__))
+            #old_stock_day = session.query(StockDay).\
+            #    filter(StockDay.symbol == stock_day.symbol).filter(StockDay.date == stock_day.date).first()
+            #if old_stock_day:
+            #    for k, v in stock_day.__dict__.items():
+            #        setattr(old_stock_day, k, v)
+            #else:
+            #    session.add(StockDay(**stock_day.__dict__))
+            session.add(StockDay(**stock_day.__dict__))
         session.commit()
 
     def load(self, symbol, start_date=None, end_date=None):
