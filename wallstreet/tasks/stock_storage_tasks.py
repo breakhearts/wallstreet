@@ -5,7 +5,6 @@ from celery.utils.log import get_task_logger
 from wallstreet.base import StockDay, StockInfo
 import traceback
 from dateutil.parser import parse
-from datetime import datetime
 
 logger = get_task_logger(__name__)
 

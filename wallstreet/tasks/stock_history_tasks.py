@@ -66,15 +66,18 @@ def get_stock_history(self, symbol, start_date=None, end_date=None):
     api = YahooHistoryDataAPI()
     url, method, headers, data = api.get_url_params(symbol, start_date, end_date)
     fetcher = RequestsFetcher()
+    task_counter.new("HISTORY_TASKS")
     try:
         status_code, content = fetcher.fetch(url, method, headers, data)
         if status_code != 200:
+            logger.debug("status_code={0}".format(status_code))
             if status_code == 404:
                 raise Ignore()
-            logger.debug("status_code={0}".format(status_code))
-            raise self.retry()
+            else:
+                raise self.retry()
         ret = api.parse_ret(symbol, content.decode("utf-8"))
         logger.debug("ok, symbol={0}, total={1}".format(symbol, len(ret)))
+        task_counter.new("HISTORY_TASKS_SUCCESS")
         return [x.serializable_obj() for x in ret]
     except Exception as exc:
         logger.error(traceback.format_exc())
