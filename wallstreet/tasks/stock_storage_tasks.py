@@ -1,10 +1,9 @@
 from __future__ import absolute_import
-from wallstreet.storage import StockDaySqlStorage, StockInfoSqlStorage
+from wallstreet.storage import StockDaySqlStorage, StockInfoSqlStorage, LastUpdateSqlStorage
 from wallstreet.tasks.celery import app, engine, Session
 from celery.utils.log import get_task_logger
 from wallstreet.base import StockDay, StockInfo
 import traceback
-from dateutil.parser import parse
 
 logger = get_task_logger(__name__)
 
@@ -26,10 +25,19 @@ def save_stock_day(stock_days):
         stock_day_storage = StockDaySqlStorage(engine, Session)
         try:
             stock_day_storage.save(stock_days)
+            last_update_storage = LastUpdateSqlStorage(engine, Session)
+            last_update_storage.save_stock_day(stock_days[0].symbol, last_update_date)
         except Exception as exc:
             logger.error(traceback.format_exc())
         logger.debug("ok, symbol = {0}".format(stock_days[0].symbol))
-        update_last_update_date.apply_async((symbols.popitem()[0], last_update_date.strftime("%Y-%m-%d")))
+
+
+@app.task
+def load_last_update_date(symbol, date_type):
+    storage = LastUpdateSqlStorage(engine, Session)
+    t = storage.load_stock_day(symbol)
+    logger.debug("ok, symbol = {0}, date_type = {1}".format(symbol, date_type))
+    return t is None and "1970-01-01" or t.strftime("%Y-%m-%d")
 
 
 @app.task
@@ -42,11 +50,3 @@ def save_stock_info(stock_infos):
         except Exception as exc:
             logger.debug(traceback.format_exc())
         logger.debug("ok, exchange = {0}".format(stock_infos[0].exchange))
-
-
-@app.task
-def update_last_update_date(symbol, last_update_date):
-    last_update_date = parse(last_update_date)
-    stock_info_storage = StockInfoSqlStorage(engine, Session)
-    stock_info_storage.update_last_update_time(symbol, last_update_date)
-    logger.debug("ok, symbol = {0}".format(symbol))

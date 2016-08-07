@@ -12,20 +12,13 @@ class StockInfoStorage(object):
     def save(self, stock_infos):
         """
         save stock_info
-        :parm stock_infos:StockInfo object or list
+        :parameter stock_infos:StockInfo object or list
         """
         raise NotImplementedError
 
     def load_all(self):
         """
         load all stock info
-        """
-        raise NotImplementedError
-
-    def update_last_update_time(self, symbol, last_update_time):
-        """
-        :param last_update_time:
-        :return:
         """
         raise NotImplementedError
 
@@ -43,6 +36,29 @@ class StockDayStorage(object):
         load StockDay by symbol and date range
         """
         raise NotImplementedError
+
+
+class LastUpdateStorage(object):
+    STOCK_DAY = 1
+    """
+    storage about last update date
+    """
+    def load_stock_day(self, symbol):
+        """
+        get last update date of StockDay
+        :parameter symbol:stock symbok
+        :return: last update date of StockDay
+        """
+        raise NotImplementedError
+
+    def save_stock_day(self, symbol, last_update_date):
+        """
+        set last update date of StockDay
+        :parameter last_update_date: last update date of StockDay
+        :parameter symbol: stock symbol
+        """
+        raise NotImplementedError
+
 
 Base = declarative_base()
 
@@ -63,7 +79,6 @@ class StockInfo(Base):
     __tablename__ = "stock_info"
     symbol = Column(String(32), primary_key=True)
     exchange = Column(String(32))
-    last_update_date = Column(DateTime)
 
 
 class StockInfoSqlStorage(StockInfoStorage, SqlStorage):
@@ -77,30 +92,23 @@ class StockInfoSqlStorage(StockInfoStorage, SqlStorage):
                 for k, v in stock_info.__dict__.items():
                     setattr(old_stock_info, k, v)
             else:
-                session.add(StockInfo(symbol=stock_info.symbol, exchange=stock_info.exchange,
-                                      last_update_date=stock_info.last_update_date))
+                session.add(StockInfo(symbol=stock_info.symbol, exchange=stock_info.exchange))
         session.commit()
 
     def load(self, symbol):
         session = self.Session()
         t = session.query(StockInfo).filter(StockInfo.symbol == symbol).first()
+        stock_info = t and base.StockInfo(t.symbol, t.exchange) or None
         session.commit()
-        return t and base.StockInfo(t.symbol, t.exchange, t.last_update_date) or None
+        return stock_info
 
     def load_all(self):
         session = self.Session()
         ret = []
         for t in session.query(StockInfo):
-            ret.append(base.StockInfo(t.symbol, t.exchange, t.last_update_date))
+            ret.append(base.StockInfo(t.symbol, t.exchange))
         session.commit()
         return ret
-
-    def update_last_update_time(self, symbol, last_update_time):
-        session = self.Session()
-        t = session.query(StockInfo).filter(StockInfo.symbol == symbol).first()
-        if t:
-            t.last_update_date = last_update_time
-            session.commit()
 
 
 class StockDay(Base):
@@ -145,6 +153,40 @@ class StockDaySqlStorage(StockDayStorage, SqlStorage):
             ret.append(base.StockDay(t.symbol, t.date, t.open, t.close, t.high, t.low, t.volume, t.adj_factor))
         session.commit()
         return ret
+
+
+class LastUpdate(Base):
+    __tablename__ = "last_update"
+    id = Column(Integer, primary_key=True)
+    symbol = Column(String(32))
+    data_type = Column(Integer)
+    last_update_date = Column(DateTime)
+    __table_args__ = (Index("symbol_date_type_index", "symbol", "data_type"), )
+
+
+class LastUpdateSqlStorage(LastUpdateStorage, SqlStorage):
+
+    def load_stock_day(self, symbol):
+        session = self.Session()
+        t = session.query(LastUpdate).filter(LastUpdate.symbol == symbol)\
+            .filter(LastUpdate.data_type == LastUpdateStorage.STOCK_DAY).first()
+        if t is None:
+            last_update_date = None
+        else:
+            last_update_date = t.last_update_date
+        session.commit()
+        return last_update_date
+
+    def save_stock_day(self, symbol, last_update_date):
+        session = self.Session()
+        t = session.query(LastUpdate).filter(LastUpdate.symbol == symbol)\
+            .filter(LastUpdate.data_type == LastUpdateStorage.STOCK_DAY).first()
+        if t:
+            t.last_update_date = last_update_date
+        else:
+            session.add(LastUpdate(symbol=symbol, data_type=LastUpdateStorage.STOCK_DAY,
+                                   last_update_date=last_update_date))
+        session.commit()
 
 
 def create_sql_table(engine):
