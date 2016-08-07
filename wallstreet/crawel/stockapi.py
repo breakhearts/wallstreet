@@ -71,7 +71,7 @@ class YahooHistoryDataAPI(HistoryDataAPI):
         for line in content.splitlines()[1:]:
             t = line.split(",")
             if len(t) == 7:
-                date, open, close, high, low, volume, adj_close = t
+                date, open, high, low, close, volume, adj_close = t
                 close, adj_close = float(close), float(adj_close)
                 adj_factor = close > 0 and adj_close / close or 1.0
                 data.append(StockDay(stock.upper(), parse(date), open, close, high, low, volume, adj_factor))
