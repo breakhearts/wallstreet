@@ -3,7 +3,6 @@ import redis
 from collections import defaultdict, OrderedDict
 from wallstreet import config
 from celery.utils.log import get_task_logger
-from wallstreet.tasks.task_monitor import task_counter
 
 logger = get_task_logger(__name__)
 

@@ -12,9 +12,9 @@ class StockInfoAPI(object):
         """
         raise NotImplementedError
 
-    def parse_ret(self, content):
+    def parse_ret(self, exchange, content):
         """
-        :param content: http response content
+        :params content: http response content
         :return: StockInfo list
         """
         raise NotImplementedError
