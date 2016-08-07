@@ -9,7 +9,7 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_REDIRECT_STDOUTS_LEVEL = "info"
 CELERY_IGNORE_RESULT = True
-CELERY_DISABLE_RATE_LIMITS = True
+#CELERY_DISABLE_RATE_LIMITS = True
 BROKER_TRANSPORT_OPTIONS = {'fanout_prefix': True, 'fanout_patterns': True, 'visibility_timeout': 43200}
 CELERY_TIMEZONE = 'US/Eastern'
 
@@ -77,3 +77,5 @@ CELERY_ROUTES = {
         'routing_key': 'stock_storage_tasks.save_stock_info'
     }
 }
+
+CELERY_ANNOTATIONS = {'wallstreet.tasks.stock_history_tasks.get_stock_history': {'rate_limit': '100/m'}}

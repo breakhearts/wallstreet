@@ -3,6 +3,7 @@ import redis
 from collections import defaultdict, OrderedDict
 from wallstreet import config
 from celery.utils.log import get_task_logger
+from wallstreet.tasks.task_monitor import task_counter
 
 logger = get_task_logger(__name__)
 
@@ -38,33 +39,3 @@ class TaskCounter(object):
 
 task_counter = TaskCounter(host=config.get("counter", "host"), port=config.get_int("counter", "port"),
                            db=config.get("counter", "db"))
-
-
-def task_monitor(app):
-    state = app.events.State()
-
-    def on_task_failed(event):
-        state.event(event)
-        task = state.tasks.get(event['uuid'])
-        task_counter.failed(task.name)
-        logger.debug("name={0}".format(task.name))
-
-    def on_task_succeeded(event):
-        state.event(event)
-        task = state.tasks.get(event['uuid'])
-        task_counter.succeeded(task.name)
-        logger.debug("name={0}".format(task.name))
-
-    def on_task_sent(event):
-        state.event(event)
-        task = state.tasks.get(event['uuid'])
-        task_counter.new(task.name)
-        logger.debug("name={0}".format(task.name))
-
-    with app.connection() as connection:
-        recv = app.events.Receiver(connection, handlers={
-            'task-sent': on_task_sent,
-            'task-failed': on_task_failed,
-            'task-succeeded': on_task_succeeded
-        })
-        recv.capture(limit=None, timeout=None, wakeup=True)
