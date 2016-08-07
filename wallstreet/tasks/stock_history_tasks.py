@@ -4,11 +4,13 @@ from wallstreet.crawel.fetcher import RequestsFetcher
 from wallstreet.crawel.stockapi import YahooHistoryDataAPI, NasdaqStockInfoAPI
 from wallstreet.tasks.celery import app
 from wallstreet import base
-from wallstreet.tasks.stock_storage_tasks import save_stock_day, load_all_stock_info, save_stock_info
+from wallstreet.tasks.stock_storage_tasks import save_stock_day, load_all_stock_info, save_stock_info, load_last_update_date
 from celery.utils.log import get_task_logger
+from wallstreet.storage import LastUpdateStorage
 from wallstreet.tasks.task_monitor import task_counter
 from wallstreet.notification.notifier import email_notifier
 from celery.exceptions import Ignore
+from dateutil.parser import parse
 import traceback
 
 logger = get_task_logger(__name__)
@@ -49,9 +51,16 @@ def update_all_stock_day():
 def get_all_stock_history(stocks):
     stocks = [base.StockInfo.from_serializable_obj(x) for x in stocks]
     for stock_info in stocks:
-        get_stock_history.apply_async((stock_info.symbol, base.get_next_day_str(stock_info.last_update_date)),
-                                      link=save_stock_day.s())
+        load_last_update_date.apply_async((stock_info.symbol, LastUpdateStorage.STOCK_DAY),
+                                          link=update_stock_history.s(stock_info.symbol))
     logger.debug("get all stock history all")
+
+
+@app.task
+def update_stock_history(last_update_date, symbol):
+    last_update_date = parse(last_update_date)
+    get_stock_history.apply_async((symbol, base.get_next_day_str(last_update_date)),
+                                  link=save_stock_day.s())
 
 
 class StockHistoryTasks(Task):

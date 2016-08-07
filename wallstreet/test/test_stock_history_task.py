@@ -30,8 +30,10 @@ def test_stock_history_task():
 def test_get_all_stock_history(engine_and_session_cls):
     # insert data
     storage = StockInfoSqlStorage(engine, Session)
-    storage.save(base.StockInfo("BIDU", "nasdaq", datetime.today() - timedelta(days=7)))
-    storage.save(base.StockInfo("BABA", "nasdaq", datetime.today() - timedelta(days=7)))
+    storage.save(base.StockInfo("BIDU", "nasdaq"))
+    storage.save(base.StockInfo("BABA", "nasdaq"))
+    storage = LastUpdateSqlStorage(engine, Session)
+    storage.save_stock_day(symbol="BIDU", last_update_date=datetime.today() - timedelta(days=7))
     update_all_stock_day()
     # check data
     storage = StockDaySqlStorage(engine, Session)
@@ -41,9 +43,9 @@ def test_get_all_stock_history(engine_and_session_cls):
     t = storage.load("BABA")
     assert len(t) > 0
     assert t[0].symbol == "BABA"
-    storage = StockInfoSqlStorage(engine, Session)
-    t = storage.load('BABA')
-    assert t.last_update_date > datetime(2016, 1, 1)
+    storage = LastUpdateSqlStorage(engine, Session)
+    t = storage.load_stock_day('BABA')
+    assert t > datetime(2016, 1, 1)
 
 
 def test_update_stock_info():
