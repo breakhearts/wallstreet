@@ -1,7 +1,7 @@
 """
 data structure and utility functions
 """
-from datetime import datetime, timedelta
+from datetime import timedelta
 import os
 from datetime import datetime
 from dateutil.parser import parse
@@ -70,15 +70,29 @@ class StockDay(object):
     @staticmethod
     def from_serializable_obj(obj):
         return StockDay(
-                symbol = obj["symbol"],
-                date = parse(obj["date"]),
-                open = obj["open"],
-                close = obj["close"],
-                high = obj["high"],
-                low = obj["low"],
-                volume = obj["volume"],
-                adj_factor = obj["adj_factor"]
+                symbol=obj["symbol"],
+                date=parse(obj["date"]),
+                open=obj["open"],
+                close=obj["close"],
+                high=obj["high"],
+                low=obj["low"],
+                volume=obj["volume"],
+                adj_factor=obj["adj_factor"]
             )
+
+
+class BaseIndex(object):
+    """
+    basic index
+    """
+    def __init__(self, change, ma5, ma20, ma60, vol5, vol20, vol60):
+        self.change = change
+        self.ma5 = ma5
+        self.ma20 = ma20
+        self.ma60 = ma60
+        self.vol5 = vol5
+        self.vol20 = vol20
+        self.vol60 = vol60
 
 
 def get_next_day_str(today):

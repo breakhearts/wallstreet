@@ -77,7 +77,7 @@ def get_stock_history(self, symbol, start_date=None, end_date=None):
                 raise self.retry()
         ret = api.parse_ret(symbol, content.decode("utf-8"))
         logger.debug("ok, symbol={0}, total={1}".format(symbol, len(ret)))
-        task_counter.new("HISTORY_TASKS_SUCCESS")
+        task_counter.succeeded("HISTORY_TASKS")
         return [x.serializable_obj() for x in ret]
     except Exception as exc:
         logger.error(traceback.format_exc())
