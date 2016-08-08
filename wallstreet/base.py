@@ -82,7 +82,8 @@ class BaseIndex(object):
     """
     basic index
     """
-    def __init__(self, date=None, change=0, ma5=0, ma20=0, ma60=0, vol5=0, vol20=0, vol60=0):
+    def __init__(self, symbol=None, date=None, change=0, ma5=0, ma20=0, ma60=0, vol5=0, vol20=0, vol60=0):
+        self.symbol = symbol
         self.date = date
         self.change = change
         self.ma5 = ma5
@@ -94,11 +95,13 @@ class BaseIndex(object):
 
     def update(self, last_60_day):
         adj_last_60_close_price = [x.close * x.adj_factor for x in last_60_day]
-        last_60_vol = [x.vol for x in last_60_day]
+        last_60_vol = [x.volume for x in last_60_day]
+        self.date = last_60_day[0].date
+        self.symbol = last_60_day[0].symbol
         self.change = len(adj_last_60_close_price) == 1 and 0 or (adj_last_60_close_price[0] / adj_last_60_close_price[1]) - 1
-        self.ma5 = len(last_60_day) >= 5 and sum(last_60_day[:5]) / 5 or 0
-        self.ma20 = len(last_60_day) >= 20 and sum(last_60_day[:20]) / 20 or 0
-        self.ma60 = len(last_60_day) >= 60 and sum(last_60_day[:60]) / 60 or 0
+        self.ma5 = len(last_60_day) >= 5 and sum(adj_last_60_close_price[:5]) / 5 or 0
+        self.ma20 = len(last_60_day) >= 20 and sum(adj_last_60_close_price[:20]) / 20 or 0
+        self.ma60 = len(last_60_day) >= 60 and sum(adj_last_60_close_price[:60]) / 60 or 0
         self.vol5 = len(last_60_vol) >= 5 and sum(last_60_vol[:5]) / 5 or 0
         self.vol20 = len(last_60_vol) >= 20 and sum(last_60_vol[:20]) / 20 or 0
         self.vol60 = len(last_60_vol) >= 60 and sum(last_60_vol[:60]) / 60 or 0

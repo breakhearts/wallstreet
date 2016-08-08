@@ -49,6 +49,7 @@ class StockDayStorage(object):
 
 class LastUpdateStorage(object):
     STOCK_DAY = 1
+    STOCK_BASE_INDEX = 2
     """
     storage about last update date
     """
@@ -70,12 +71,14 @@ class LastUpdateStorage(object):
 
 
 class BaseIndexStorage(object):
-    def save(self, symbol, date, base_index):
+    def save(self, base_index):
         raise NotImplementedError
 
-    def load(self, symbol, date):
+    def load(self, symbol, start_date=None, end_date=None):
         raise NotImplementedError
 
+    def load_last(self, symbol, limit):
+        raise NotImplementedError
 
 Base = declarative_base()
 
@@ -192,10 +195,21 @@ class LastUpdate(Base):
 
 class LastUpdateSqlStorage(LastUpdateStorage, SqlStorage):
 
-    def load_stock_day(self, symbol):
+    def __save(self, symbol, data_type, last_update_date):
         session = self.Session()
         t = session.query(LastUpdate).filter(LastUpdate.symbol == symbol)\
             .filter(LastUpdate.data_type == LastUpdateStorage.STOCK_DAY).first()
+        if t:
+            t.last_update_date = last_update_date
+        else:
+            session.add(LastUpdate(symbol=symbol, data_type=data_type,
+                                   last_update_date=last_update_date))
+        session.commit()
+
+    def __load(self, symbol, data_type):
+        session = self.Session()
+        t = session.query(LastUpdate).filter(LastUpdate.symbol == symbol)\
+            .filter(LastUpdate.data_type == data_type).first()
         if t is None:
             last_update_date = None
         else:
@@ -203,16 +217,64 @@ class LastUpdateSqlStorage(LastUpdateStorage, SqlStorage):
         session.commit()
         return last_update_date
 
+    def load_stock_day(self, symbol):
+        return self.__load(symbol, LastUpdateStorage.STOCK_DAY)
+
     def save_stock_day(self, symbol, last_update_date):
+        self.__save(symbol, LastUpdateStorage.STOCK_DAY, last_update_date)
+
+    def load_stock_base_index(self, symbol):
+        return self.__load(symbol, LastUpdateStorage.STOCK_BASE_INDEX)
+
+    def save_stock_base_index(self, symbol, last_update_date):
+        self.__save(symbol, LastUpdateStorage.STOCK_BASE_INDEX, last_update_date)
+
+
+class BaseIndex(Base):
+    __tablename__ = "base_index"
+    id = Column(Integer, primary_key=True)
+    symbol = Column(String(32))
+    date = Column(DateTime)
+    change = Column(Float)
+    ma5 = Column(Float)
+    ma20 = Column(Float)
+    ma60 = Column(Float)
+    vol5 = Column(Integer)
+    vol20 = Column(Integer)
+    vol60 = Column(Integer)
+    __table_args__ = (Index("symbol_date_index", "symbol", "date"), )
+
+
+class BaseIndexSqlStorage(BaseIndexStorage, SqlStorage):
+    def save(self, base_indexs):
+        if not isinstance(base_indexs, list):
+            base_indexs = [base_indexs]
         session = self.Session()
-        t = session.query(LastUpdate).filter(LastUpdate.symbol == symbol)\
-            .filter(LastUpdate.data_type == LastUpdateStorage.STOCK_DAY).first()
-        if t:
-            t.last_update_date = last_update_date
-        else:
-            session.add(LastUpdate(symbol=symbol, data_type=LastUpdateStorage.STOCK_DAY,
-                                   last_update_date=last_update_date))
+        for base_index in base_indexs:
+            session.add(BaseIndex(**base_index.__dict__))
         session.commit()
+
+    def load(self, symbol, start_date=None, end_date=None):
+        session = self.Session()
+        records = session.query(BaseIndex).filter(BaseIndex.symbol == symbol)
+        if start_date:
+            records = records.filter(BaseIndex.date >= start_date)
+        if end_date:
+            records = records.filter(BaseIndex.date <= end_date)
+        ret = []
+        for t in records:
+            ret.append(base.BaseIndex(t.symbol, t.date, t.change, t.ma5, t.ma20, t.ma60, t.vol5, t.vol20, t.vol60))
+        session.commit()
+        return ret
+
+    def load_last(self, symbol, limit):
+        session = self.Session()
+        records = session.query(BaseIndex).filter(BaseIndex.symbol == symbol).order_by(BaseIndex.date.desc()).limit(limit)
+        ret = []
+        for t in records:
+            ret.append(base.BaseIndex(t.symbol, t.date, t.change, t.ma5, t.ma20, t.ma60, t.vol5, t.vol20, t.vol60))
+        session.commit()
+        return ret
 
 
 def create_sql_table(engine):

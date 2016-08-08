@@ -2,7 +2,7 @@ from __future__ import absolute_import
 import pytest
 from wallstreet.storage import *
 from wallstreet import base
-from datetime import datetime
+from datetime import datetime, timedelta
 from wallstreet import config
 
 
@@ -64,3 +64,34 @@ class TestLastUpdate:
         storage.save_stock_day("BIDU", datetime(2014, 2, 14))
         t = storage.load_stock_day("BIDU")
         assert t == datetime(2014, 2, 14)
+
+
+class TestBaseIndexSqlStorage:
+    def test_save_load(self, engine_and_session_cls):
+        engine, session_cls = engine_and_session_cls
+        storage = BaseIndexSqlStorage(engine, session_cls)
+        t = []
+        for i in range(30):
+            t.append(base.StockDay("BIDU", datetime(2015, 2, 20) - timedelta(days=i),
+                                   13.1231, 1, 22.12312, 1, 100, 1))
+        for i in range(30, 60):
+            t.append(base.StockDay("BIDU", datetime(2015, 2, 20) - timedelta(days=i),
+                                   13.1231, 1, 22.12312, 1, 100, 0.5))
+        index = base.BaseIndex()
+        index.update(t)
+        assert index.ma5 == 1
+        assert index.ma20 == 1
+        assert index.ma60 == 0.75
+        assert index.vol5 == 100
+        assert index.vol20 == 100
+        assert index.vol60 == 100
+        storage.save(index)
+        index1 = base.BaseIndex()
+        index1.update(t[1:])
+        index2 = base.BaseIndex()
+        index2.update(t[40:])
+        storage.save([index1, index2])
+        t = storage.load("BIDU", datetime(2015, 2, 19), datetime(2015, 2, 20))
+        assert len(t) == 2
+        t = storage.load_last("BIDU", 2)
+        assert len(t) == 2

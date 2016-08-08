@@ -78,7 +78,6 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
         real_start_date = min(start_date, last_no_dividend)
     else:
         real_start_date = start_date
-    print(real_start_date, start_date, last_no_dividend)
     url, method, headers, data = api.get_url_params(symbol, real_start_date, end_date)
     fetcher = RequestsFetcher()
     task_counter.new("HISTORY_TASKS")
