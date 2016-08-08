@@ -92,6 +92,10 @@ class BaseIndex(object):
         self.vol60 = vol60
 
 
+def get_day_str(date):
+    return date.strftime("%Y%m%d")
+
+
 def get_next_day_str(today):
     """
     :param today: datetime of today

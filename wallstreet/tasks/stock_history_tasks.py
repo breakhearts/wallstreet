@@ -59,8 +59,8 @@ def get_all_stock_history(stocks):
 @app.task
 def update_stock_history(last_update_date, symbol):
     last_update_date = parse(last_update_date)
-    get_stock_history.apply_async((symbol, base.get_next_day_str(last_update_date), True, last_update_date),
-                                  link=save_stock_day.s())
+    get_stock_history.apply_async((symbol, base.get_next_day_str(last_update_date), None, True,
+                                   base.get_day_str(last_update_date)), link=save_stock_day.s())
 
 
 class StockHistoryTasks(Task):
@@ -78,6 +78,7 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
         real_start_date = min(start_date, last_no_dividend)
     else:
         real_start_date = start_date
+    print(real_start_date, start_date, last_no_dividend)
     url, method, headers, data = api.get_url_params(symbol, real_start_date, end_date)
     fetcher = RequestsFetcher()
     task_counter.new("HISTORY_TASKS")
