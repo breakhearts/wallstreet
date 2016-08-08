@@ -38,7 +38,7 @@ class TestStockDaySqlStorage:
     def test_save_load(self, engine_and_session_cls):
         engine, session_cls = engine_and_session_cls
         storage = StockDaySqlStorage(engine, session_cls)
-        storage.save(base.StockDay("BIDU", datetime(2015, 2, 13), 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0))
+        storage.save(base.StockDay("BIDU", datetime(2015, 2, 20), 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0))
         storage.save([base.StockDay("BIDU", datetime(2015, 2, 14), 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0),
                       base.StockDay("BIDU", datetime(2015, 2, 15), 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0)])
         storage.save(base.StockDay("BIDU", datetime(2015, 2, 16), 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0))
@@ -46,7 +46,12 @@ class TestStockDaySqlStorage:
         storage.save(base.StockDay("BABA", datetime(2015, 2, 18), 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0))
         storage.save(base.StockDay("BABA", datetime(2015, 2, 14), 13.1231, 21.1234, 22.12312, 32.1234, 1022313, 1.0))
         t = storage.load("BIDU", datetime(2015, 2, 13), datetime(2015, 2, 15))
+        assert len(t) == 2
+        t = storage.load_last("BIDU", 3)
         assert len(t) == 3
+        assert t[0].date == datetime(2015,2,20)
+        assert t[1].date == datetime(2015,2,17)
+        assert t[2].date == datetime(2015,2,16)
 
 
 class TestLastUpdate:

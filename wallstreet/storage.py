@@ -37,6 +37,15 @@ class StockDayStorage(object):
         """
         raise NotImplementedError
 
+    def load_last(self, symbol, limit):
+        """
+        load last limit record
+        :param symbol: stock symbol
+        :param limit: last limit, sort from recently to far away
+        :return:
+        """
+        raise NotImplementedError
+
 
 class LastUpdateStorage(object):
     STOCK_DAY = 1
@@ -57,6 +66,14 @@ class LastUpdateStorage(object):
         :parameter last_update_date: last update date of StockDay
         :parameter symbol: stock symbol
         """
+        raise NotImplementedError
+
+
+class BaseIndexStorage(object):
+    def save(self, symbol, date, base_index):
+        raise NotImplementedError
+
+    def load(self, symbol, date):
         raise NotImplementedError
 
 
@@ -148,6 +165,15 @@ class StockDaySqlStorage(StockDayStorage, SqlStorage):
             records = records.filter(StockDay.date >= start_date)
         if end_date:
             records = records.filter(StockDay.date <= end_date)
+        ret = []
+        for t in records:
+            ret.append(base.StockDay(t.symbol, t.date, t.open, t.close, t.high, t.low, t.volume, t.adj_factor))
+        session.commit()
+        return ret
+
+    def load_last(self, symbol, limit):
+        session = self.Session()
+        records = session.query(StockDay).filter(StockDay.symbol == symbol).order_by(StockDay.date.desc()).limit(limit)
         ret = []
         for t in records:
             ret.append(base.StockDay(t.symbol, t.date, t.open, t.close, t.high, t.low, t.volume, t.adj_factor))
