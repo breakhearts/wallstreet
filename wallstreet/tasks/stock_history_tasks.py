@@ -59,8 +59,8 @@ def get_all_stock_history(stocks):
 @app.task
 def update_stock_history(last_update_date, symbol):
     last_update_date = parse(last_update_date)
-    get_stock_history.apply_async((symbol, base.get_next_day_str(last_update_date)),
-                                  link=save_stock_day.s())
+    get_stock_history.apply_async((symbol, base.get_next_day_str(last_update_date), None, True,
+                                   base.get_day_str(last_update_date)), link=save_stock_day.s())
 
 
 class StockHistoryTasks(Task):
@@ -71,9 +71,14 @@ class StockHistoryTasks(Task):
 
 
 @app.task(base=StockHistoryTasks, bind=True, max_retries=3, default_retry_delay=30)
-def get_stock_history(self, symbol, start_date=None, end_date=None):
+def get_stock_history(self, symbol, start_date=None, end_date=None, check_dividend=False, last_no_dividend=None):
     api = YahooHistoryDataAPI()
-    url, method, headers, data = api.get_url_params(symbol, start_date, end_date)
+    if check_dividend and last_no_dividend != start_date:
+        assert last_no_dividend is not None
+        real_start_date = min(start_date, last_no_dividend)
+    else:
+        real_start_date = start_date
+    url, method, headers, data = api.get_url_params(symbol, real_start_date, end_date)
     fetcher = RequestsFetcher()
     task_counter.new("HISTORY_TASKS")
     try:
@@ -85,12 +90,30 @@ def get_stock_history(self, symbol, start_date=None, end_date=None):
             else:
                 raise self.retry()
         ret = api.parse_ret(symbol, content.decode("utf-8"))
+        if check_dividend and last_no_dividend != start_date:
+            ret.sort(key=lambda x: x.date)
+            start_index = 0
+            for index, t in enumerate(ret):
+                if t.date == last_no_dividend:
+                    if t.ajd_facotr != 1.0:
+                        logger.debug("found dividend, symbol={0}".format(symbol))
+                        return get_stock_history((symbol,))
+                    if real_start_date < last_no_dividend:
+                        break
+                if t.date == start_date:
+                    start_index = index
+                    if real_start_date < start_date:
+                        break
+            ret = ret[start_index:]
         logger.debug("ok, symbol={0}, total={1}".format(symbol, len(ret)))
         task_counter.succeeded("HISTORY_TASKS")
         return [x.serializable_obj() for x in ret]
     except Exception as exc:
-        logger.error(traceback.format_exc())
-        raise self.retry(exc=exc)
+        if isinstance(exc, Ignore):
+            raise exc
+        else:
+            logger.error(traceback.format_exc())
+            raise self.retry(exc=exc)
 
 
 @app.task
