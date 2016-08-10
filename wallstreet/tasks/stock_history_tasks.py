@@ -4,12 +4,14 @@ from wallstreet.crawel.fetcher import RequestsFetcher
 from wallstreet.crawel.stockapi import YahooHistoryDataAPI, NasdaqStockInfoAPI
 from wallstreet.tasks.celery import app
 from wallstreet import base
-from wallstreet.tasks.stock_storage_tasks import save_stock_day, load_all_stock_info, save_stock_info, load_last_update_date
+from wallstreet.tasks.stock_storage_tasks import save_stock_day, load_all_stock_info, save_stock_info, load_last_update_date, load_last_stock_days, save_stock_base_index
 from celery.utils.log import get_task_logger
 from wallstreet.storage import LastUpdateStorage
 from wallstreet.tasks.task_monitor import task_counter
 from wallstreet.notification.notifier import email_notifier
 from celery.exceptions import Ignore
+from datetime import datetime
+from celery import chain
 from dateutil.parser import parse
 import traceback
 
@@ -53,7 +55,7 @@ def get_all_stock_history(stocks):
     for stock_info in stocks:
         load_last_update_date.apply_async((stock_info.symbol, LastUpdateStorage.STOCK_DAY),
                                           link=update_stock_history.s(stock_info.symbol))
-    logger.debug("get all stock history all")
+    logger.debug("ok")
 
 
 @app.task
@@ -124,3 +126,48 @@ def report_tasks():
         s += "{0}\t{1}\n".format(item, count)
     email_notifier.send_text("wallstreet daily report", s)
     task_counter.reset()
+
+
+@app.task
+def update_all_stock_base_index():
+    load_all_stock_info.apply_async(link=get_all_stock_base_index.s())
+
+
+@app.task
+def get_all_stock_base_index(stocks):
+    stocks = [base.StockInfo.from_serializable_obj(x) for x in stocks]
+    for stock_info in stocks:
+        load_last_update_date.apply_async((stock_info.symbol, LastUpdateStorage.STOCK_BASE_INDEX),
+                                          link=update_stock_base_index.s(stock_info.symbol))
+    logger.debug("ok")
+
+
+@app.task
+def update_stock_base_index(last_update_date, symbol):
+    last_update_date = parse(last_update_date)
+    last_after_hour_date = base.get_last_after_hour_date()
+    if last_after_hour_date == last_update_date:
+        logger.debug("fresh data, no need update, symbol = {0}".format(symbol))
+        return
+    fetch_days = (last_after_hour_date - last_update_date).days - 1 + 60
+    load_last_stock_days.apply_async((symbol, fetch_days, last_after_hour_date),
+                                     link=compute_base_index.s(last_update_date))
+    logger.debug("ok")
+
+
+@app.task
+def compute_base_index(stock_days, last_update_date):
+    stock_days = [base.StockDay.from_serializable_obj(x) for x in stock_days]
+    stock_days.sort(key=lambda x: x.date, reverse=True)
+    last_update_index = 1
+    for index, stock_day in enumerate(stock_days):
+        if stock_day.date == last_update_date:
+            last_update_index = index
+            break
+    base_indexs = []
+    for index in range(last_update_index - 1, -1, -1):
+        base_index = base.BaseIndex()
+        t = stock_days[index:index + 60]
+        base_index.update(t)
+        base_indexs.append(base_index.serializable_obj())
+    save_stock_base_index.apply_async((base_indexs,))

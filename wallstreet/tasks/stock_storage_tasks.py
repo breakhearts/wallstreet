@@ -1,8 +1,8 @@
 from __future__ import absolute_import
-from wallstreet.storage import StockDaySqlStorage, StockInfoSqlStorage, LastUpdateSqlStorage
+from wallstreet.storage import StockDaySqlStorage, StockInfoSqlStorage, LastUpdateSqlStorage, BaseIndexSqlStorage
 from wallstreet.tasks.celery import app, engine, Session
 from celery.utils.log import get_task_logger
-from wallstreet.base import StockDay, StockInfo
+from wallstreet.base import StockDay, StockInfo, BaseIndex
 import traceback
 
 logger = get_task_logger(__name__)
@@ -50,3 +50,28 @@ def save_stock_info(stock_infos):
         except Exception as exc:
             logger.debug(traceback.format_exc())
         logger.debug("ok, exchange = {0}".format(stock_infos[0].exchange))
+
+
+@app.task
+def load_last_stock_days(symbol, limit, end_date):
+    storage = StockDaySqlStorage(engine, Session)
+    stock_days = storage.load_last(symbol, limit, end_date)
+    logger.debug("ok, symbol = {0}, total = {1}".format(symbol, len(stock_days)))
+    return [x.serializable_obj() for x in stock_days]
+
+
+@app.task
+def save_stock_base_index(stock_base_indexs):
+    stock_base_indexs = [BaseIndex.from_serializable_obj(x) for x in stock_base_indexs]
+    if len(stock_base_indexs) > 0:
+        last_update_date = max([x.date for x in stock_base_indexs])
+        symbols = dict([(x.symbol, True) for x in stock_base_indexs])
+        assert len(symbols) == 1
+        storage = BaseIndexSqlStorage(engine, Session)
+        try:
+            storage.save(stock_base_indexs)
+            last_update_storage = LastUpdateSqlStorage(engine, Session)
+            last_update_storage.save_stock_base_index(stock_base_indexs[0].symbol, last_update_date)
+        except Exception as exc:
+            logger.error(traceback.format_exc())
+        logger.debug("ok, symbol = {0}".format(stock_base_indexs[0].symbol))
