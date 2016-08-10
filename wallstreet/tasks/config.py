@@ -16,15 +16,19 @@ CELERY_TIMEZONE = 'US/Eastern'
 CELERYBEAT_SCHEDULE = {
     'update_all_stock_info': {
         'task': 'wallstreet.tasks.stock_history_tasks.update_all_stock_info',
-        'schedule': crontab(hour=4, minute=0, day_of_week='1-5')
+        'schedule': crontab(hour=0, minute=0, day_of_week='1-5')
     },
-    'get_all_stock_history': {
+    'update_all_stock_history': {
         'task': 'wallstreet.tasks.stock_history_tasks.update_all_stock_day',
-        'schedule': crontab(hour=4, minute=30, day_of_week='1-5')
+        'schedule': crontab(hour=0, minute=30, day_of_week='1-5')
+    },
+    'update_all_stock_base_index': {
+        'task': 'wallstreet.tasks.stock_history_tasks.update_all_stock_base_index',
+        'schedule': crontab(hour=4, minute=0, day_of_week='1-5')
     },
     'report_task': {
         'task': 'wallstreet.tasks.stock_history_tasks.report_tasks',
-        'schedule': crontab(hour=9, minute=0, day_of_week='1-5')
+        'schedule': crontab(hour=6, minute=0, day_of_week='1-5')
     }
 }
 
