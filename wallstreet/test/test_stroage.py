@@ -61,11 +61,11 @@ class TestLastUpdate:
     def test_save_load(self, engine_and_session_cls):
         engine, session_cls = engine_and_session_cls
         storage = LastUpdateSqlStorage(engine, session_cls)
-        storage.save_stock_day("BIDU", datetime(2015, 2, 13))
-        t = storage.load_stock_day("BIDU")
+        storage.save("BIDU", datetime(2015, 2, 13), LastUpdateStorage.STOCK_DAY)
+        t = storage.load("BIDU", LastUpdateStorage.STOCK_DAY)
         assert t == datetime(2015, 2, 13)
-        storage.save_stock_day("BIDU", datetime(2014, 2, 14))
-        t = storage.load_stock_day("BIDU")
+        storage.save("BIDU", datetime(2014, 2, 14), LastUpdateStorage.STOCK_DAY)
+        t = storage.load("BIDU", LastUpdateStorage.STOCK_DAY)
         assert t == datetime(2014, 2, 14)
 
 

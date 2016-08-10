@@ -54,19 +54,21 @@ class LastUpdateStorage(object):
     """
     storage about last update date
     """
-    def load_stock_day(self, symbol):
+    def load(self, symbol, data_type):
         """
         get last update date of StockDay
         :parameter symbol:stock symbok
+        :parameter data_type
         :return: last update date of StockDay
         """
         raise NotImplementedError
 
-    def save_stock_day(self, symbol, last_update_date):
+    def save(self, symbol, last_update_date, data_type):
         """
         set last update date of StockDay
         :parameter last_update_date: last update date of StockDay
         :parameter symbol: stock symbol
+        :parameter data_type
         """
         raise NotImplementedError
 
@@ -222,17 +224,11 @@ class LastUpdateSqlStorage(LastUpdateStorage, SqlStorage):
         session.commit()
         return last_update_date
 
-    def load_stock_day(self, symbol):
-        return self.__load(symbol, LastUpdateStorage.STOCK_DAY)
+    def load(self, symbol, data_type):
+        return self.__load(symbol, data_type)
 
-    def save_stock_day(self, symbol, last_update_date):
-        self.__save(symbol, LastUpdateStorage.STOCK_DAY, last_update_date)
-
-    def load_stock_base_index(self, symbol):
-        return self.__load(symbol, LastUpdateStorage.STOCK_BASE_INDEX)
-
-    def save_stock_base_index(self, symbol, last_update_date):
-        self.__save(symbol, LastUpdateStorage.STOCK_BASE_INDEX, last_update_date)
+    def save(self, symbol, last_update_date, data_type):
+        self.__save(symbol, data_type, last_update_date)
 
 
 class BaseIndex(Base):

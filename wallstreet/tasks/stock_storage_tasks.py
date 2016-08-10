@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from wallstreet.storage import StockDaySqlStorage, StockInfoSqlStorage, LastUpdateSqlStorage, BaseIndexSqlStorage
+from wallstreet.storage import StockDaySqlStorage, StockInfoSqlStorage, LastUpdateSqlStorage, BaseIndexSqlStorage, LastUpdateStorage
 from wallstreet.tasks.celery import app, engine, Session
 from celery.utils.log import get_task_logger
 from wallstreet.base import StockDay, StockInfo, BaseIndex
@@ -26,8 +26,9 @@ def save_stock_day(stock_days):
         try:
             stock_day_storage.save(stock_days)
             last_update_storage = LastUpdateSqlStorage(engine, Session)
-            last_update_storage.save_stock_day(stock_days[0].symbol, last_update_date)
+            last_update_storage.save(stock_days[0].symbol, last_update_date, LastUpdateStorage.STOCK_DAY)
         except Exception as exc:
+            print(traceback.format_exc())
             logger.error(traceback.format_exc())
         logger.debug("ok, symbol = {0}".format(stock_days[0].symbol))
 
@@ -35,7 +36,7 @@ def save_stock_day(stock_days):
 @app.task
 def load_last_update_date(symbol, date_type):
     storage = LastUpdateSqlStorage(engine, Session)
-    t = storage.load_stock_day(symbol)
+    t = storage.load(symbol, date_type)
     logger.debug("ok, symbol = {0}, date_type = {1}".format(symbol, date_type))
     return t is None and "1970-01-01" or t.strftime("%Y-%m-%d")
 
@@ -71,7 +72,7 @@ def save_stock_base_index(stock_base_indexs):
         try:
             storage.save(stock_base_indexs)
             last_update_storage = LastUpdateSqlStorage(engine, Session)
-            last_update_storage.save_stock_base_index(stock_base_indexs[0].symbol, last_update_date)
+            last_update_storage.save(stock_base_indexs[0].symbol, last_update_date, LastUpdateStorage.STOCK_BASE_INDEX)
         except Exception as exc:
             logger.error(traceback.format_exc())
         logger.debug("ok, symbol = {0}".format(stock_base_indexs[0].symbol))

@@ -11,7 +11,6 @@ class TestYahooStockHistoryAPI:
         assert url == "http://real-chart.finance.yahoo.com/table.csv" \
                       "?s=BIDU&g=d&ignore=.csv&a=1&b=17&c=2015&d=8&e=14&f=2015"
         assert method == "GET"
-        assert headers == {}
         assert data == {}
 
     def test_parse_ret(self):

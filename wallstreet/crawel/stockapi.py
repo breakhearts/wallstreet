@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from datetime import datetime
 from wallstreet.base import StockDay, StockInfo
 from dateutil.parser import parse
+from wallstreet import base
 
 
 class StockInfoAPI(object):
@@ -40,7 +41,7 @@ class NasdaqStockInfoAPI(StockInfoAPI):
     def get_url_params(self, exchange):
         query = "http://www.nasdaq.com/screening/companies-by-industry.aspx?exchange={0}&render=download"\
             .format(exchange)
-        return query, "GET", {}, {}
+        return query, "GET", {"user-agent": base.random_ua()}, {}
 
     def parse_ret(self, exchange, content):
         data = []
@@ -64,7 +65,7 @@ class YahooHistoryDataAPI(HistoryDataAPI):
             end_date = datetime.strptime(end_date, "%Y%m%d")
             query += "&d={0}&e={1}&f={2}".format(end_date.month - 1, end_date.day, end_date.year)
         api = "http://real-chart.finance.yahoo.com/table.csv" + query
-        return api, "GET", {}, {}
+        return api, "GET", {"user-agent": base.random_ua()}, {}
 
     def parse_ret(self, stock, content):
         data = []

@@ -1,6 +1,6 @@
 import argparse
 import sys
-from wallstreet.tasks.stock_history_tasks import update_all_stock_info, update_all_stock_day, update_stock_base_index
+from wallstreet.tasks.stock_history_tasks import update_all_stock_info, update_all_stock_day, update_all_stock_base_index
 
 parser = argparse.ArgumentParser(description="wallstreet console")
 parser.add_argument('--info', dest="info", action='store_true')
@@ -15,7 +15,7 @@ def main():
     elif args.day:
         update_all_stock_day()
     elif args.index:
-        update_stock_base_index()
+        update_all_stock_base_index()
 
 
 if __name__ == "__main__":
