@@ -4,6 +4,7 @@ from wallstreet.tasks.celery import app, engine, Session
 from celery.utils.log import get_task_logger
 from wallstreet.base import StockDay, StockInfo, BaseIndex
 import traceback
+from dateutil.parser import parse
 
 logger = get_task_logger(__name__)
 
@@ -55,6 +56,7 @@ def save_stock_info(stock_infos):
 
 @app.task
 def load_last_stock_days(symbol, limit, end_date):
+    end_date = parse(end_date)
     storage = StockDaySqlStorage(engine, Session)
     stock_days = storage.load_last(symbol, limit, end_date)
     logger.debug("ok, symbol = {0}, total = {1}".format(symbol, len(stock_days)))
