@@ -151,12 +151,13 @@ def update_stock_base_index(last_update_date, symbol):
         return
     fetch_days = (last_after_hour_date - last_update_date).days - 1 + 60
     load_last_stock_days.apply_async((symbol, fetch_days, last_after_hour_date.strftime("%Y-%m-%d")),
-                                     link=compute_base_index.s(last_update_date))
+                                     link=compute_base_index.s(last_after_hour_date.strftime("%Y-%m-%d")))
     logger.debug("ok")
 
 
 @app.task
 def compute_base_index(stock_days, last_update_date):
+    last_update_date = parse(last_update_date)
     stock_days = [base.StockDay.from_serializable_obj(x) for x in stock_days]
     stock_days.sort(key=lambda x: x.date, reverse=True)
     last_update_index = 1
