@@ -96,6 +96,8 @@ class BaseIndex(object):
         self.vol60 = vol60
 
     def update(self, last_60_day):
+        if len(last_60_day) == 0:
+            return
         adj_last_60_close_price = [x.close * x.adj_factor for x in last_60_day]
         last_60_vol = [x.volume for x in last_60_day]
         self.date = last_60_day[0].date
