@@ -95,7 +95,7 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
             start_index = 0
             for index, t in enumerate(ret):
                 if t.date.strftime("%Y%02m%02d") == last_no_dividend:
-                    if t.adj_facotr != 1.0:
+                    if t.adj_factor != 1.0:
                         logger.debug("found dividend, symbol={0}".format(symbol))
                         return get_stock_history((symbol,))
                     if real_start_date < last_no_dividend:
