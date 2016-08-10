@@ -36,6 +36,7 @@ CELERY_QUEUES = (
 )
 
 CELERY_ROUTES = {
+    #history
     'wallstreet.tasks.stock_history_tasks.update_all_stock_info':{
         'queue': 'stock_history_tasks',
         'routing_key': 'stock_history_tasks.update_all_stock_info'
@@ -64,6 +65,23 @@ CELERY_ROUTES = {
         'queue': 'stock_history_tasks',
         'routing_key': 'stock_history_tasks.report_tasks'
     },
+    'wallstreet.tasks.stock_history_tasks.update_all_stock_base_index': {
+        'queue': 'stock_history_tasks',
+        'routing_key': 'stock_history_tasks.update_all_stock_base_index'
+    },
+    'wallstreet.tasks.stock_history_tasks.get_all_stock_base_index': {
+        'queue': 'stock_history_tasks',
+        'routing_key': 'stock_history_tasks.get_all_stock_base_index'
+    },
+    'wallstreet.tasks.stock_history_tasks.update_stock_base_index': {
+        'queue': 'stock_history_tasks',
+        'routing_key': 'stock_history_tasks.update_stock_base_index'
+    },
+    'wallstreet.tasks.stock_history_tasks.compute_base_index': {
+        'queue': 'stock_history_tasks',
+        'routing_key': 'stock_history_tasks.compute_base_index'
+    },
+    #storage
     'wallstreet.tasks.stock_storage_tasks.load_all_stock_info': {
         'queue': 'stock_storage_tasks',
         'routing_key': 'stock_storage_tasks.load_all_stock_info'
@@ -79,6 +97,14 @@ CELERY_ROUTES = {
     'wallstreet.tasks.stock_storage_tasks.save_stock_info': {
         'queue': 'stock_storage_tasks',
         'routing_key': 'stock_storage_tasks.save_stock_info'
+    },
+    'wallstreet.tasks.stock_storage_tasks.load_last_stock_days': {
+        'queue': 'stock_storage_tasks',
+        'routing_key': 'stock_storage_tasks.load_last_stock_days'
+    },
+    'wallstreet.tasks.stock_storage_tasks.save_stock_base_index': {
+        'queue': 'stock_storage_tasks',
+        'routing_key': 'stock_storage_tasks.save_stock_base_index'
     }
 }
 

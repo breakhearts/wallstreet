@@ -2,8 +2,10 @@
 data structure and utility functions
 """
 from datetime import timedelta
+from datetime import datetime
 import os
 from dateutil.parser import parse
+from dateutil import tz
 
 
 class StockInfo(object):
@@ -106,6 +108,33 @@ class BaseIndex(object):
         self.vol20 = len(last_60_vol) >= 20 and sum(last_60_vol[:20]) / 20 or 0
         self.vol60 = len(last_60_vol) >= 60 and sum(last_60_vol[:60]) / 60 or 0
 
+    def serializable_obj(self):
+        return {
+            "symbol": self.symbol,
+            "date": self.date.strftime("%Y-%m-%d"),
+            "change": self.change,
+            "ma5": self.ma5,
+            "ma20": self.ma20,
+            "ma60": self.ma60,
+            "vol5": self.vol5,
+            "vol20": self.vol20,
+            "vol60": self.vol60
+        }
+
+    @staticmethod
+    def from_serializable_obj(obj):
+        return BaseIndex(
+            symbol=obj["symbol"],
+            date=parse(obj["date"]),
+            change=obj["change"],
+            ma5=obj["ma5"],
+            ma20=obj["ma20"],
+            ma60=obj["ma60"],
+            vol5=obj["vol5"],
+            vol20=obj["vol20"],
+            vol60=obj["vol60"]
+        )
+
 
 def get_day_str(date):
     return date.strftime("%Y%m%d")
@@ -134,3 +163,40 @@ def wise_mk_dir(path):
 def wise_mk_dir_for_file(filepath):
     p = os.path.dirname(filepath)
     wise_mk_dir(p)
+
+
+def get_trading_date_skip_weekend(t):
+    if t.weekday() == 5:
+        t = t - timedelta(days=1)
+    elif t.weekday() == 6:
+        t = t - timedelta(days=2)
+    else:
+        t = t
+    return datetime(year=t.year, month=t.month, day=t.day)
+
+
+def get_last_real_time_date():
+    ny_now = datetime.now(tz.tzstr("EST5EDT"))
+    if (ny_now.hour == 9 and ny_now.minute < 30) or ny_now.hour < 9:
+        t = ny_now - timedelta(days=1)
+    else:
+        t = ny_now
+    return get_trading_date_skip_weekend(t)
+
+
+def get_last_pre_market_date():
+    ny_now = datetime.now(tz.tzstr("EST5EDT"))
+    if ny_now.hour < 4 or ny_now.hour == 4 and ny_now.minute <= 30:
+        t = ny_now - timedelta(days=1)
+    else:
+        t = ny_now
+    return get_trading_date_skip_weekend(t)
+
+
+def get_last_after_hour_date():
+    ny_now = datetime.now(tz.tzstr("EST5EDT"))
+    if ny_now.hour < 16 or ny_now.hour == 16 and ny_now.minute <= 30:
+        t = ny_now - timedelta(days=1)
+    else:
+        t = ny_now
+    return get_trading_date_skip_weekend(t)

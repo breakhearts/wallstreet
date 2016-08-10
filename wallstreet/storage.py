@@ -37,11 +37,12 @@ class StockDayStorage(object):
         """
         raise NotImplementedError
 
-    def load_last(self, symbol, limit):
+    def load_last(self, symbol, limit, end_date=None):
         """
         load last limit record
         :param symbol: stock symbol
         :param limit: last limit, sort from recently to far away
+        :param end_date
         :return:
         """
         raise NotImplementedError
@@ -174,9 +175,13 @@ class StockDaySqlStorage(StockDayStorage, SqlStorage):
         session.commit()
         return ret
 
-    def load_last(self, symbol, limit):
+    def load_last(self, symbol, limit, end_date=None):
         session = self.Session()
-        records = session.query(StockDay).filter(StockDay.symbol == symbol).order_by(StockDay.date.desc()).limit(limit)
+        if end_date:
+            records = session.query(StockDay).filter(StockDay.symbol == symbol).filter(StockDay.date <= end_date)\
+                .order_by(StockDay.date.desc()).limit(limit)
+        else:
+            records = session.query(StockDay).filter(StockDay.symbol == symbol).order_by(StockDay.date.desc()).limit(limit)
         ret = []
         for t in records:
             ret.append(base.StockDay(t.symbol, t.date, t.open, t.close, t.high, t.low, t.volume, t.adj_factor))

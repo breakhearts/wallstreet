@@ -48,6 +48,25 @@ def test_get_all_stock_history(engine_and_session_cls):
     assert t > datetime(2016, 1, 1)
 
 
+def test_update_stock_base_index():
+    stock_days = []
+    for i in range(40):
+        stock_days.append(base.StockDay("FB", datetime(2005, 1, 1) + timedelta(days=i * 2), 1, 1, 1, 1, 1, 1))
+    stock_day_storage = StockDaySqlStorage(engine, Session)
+    stock_day_storage.save(stock_days)
+    stock_info_storage = StockInfoSqlStorage(engine, Session)
+    stock_info_storage.save(base.StockInfo("FB", "nasdaq"))
+    update_all_stock_base_index()
+    base_index_storage = BaseIndexSqlStorage(engine, Session)
+    t = base_index_storage.load_last(symbol="FB", limit=1)
+    assert len(t) == 1
+    last_update_storage = LastUpdateSqlStorage(engine, Session)
+    last_update_date = last_update_storage.load_stock_base_index("FB")
+    assert last_update_date == datetime(2005, 1, 1) + timedelta(days=39 * 2)
+    assert t[0].vol60 == 0
+    assert t[0].vol20 == 1
+
+
 def test_update_stock_info():
     t = update_stock_info("NASDAQ")
     t = [base.StockInfo.from_serializable_obj(x) for x in t]
