@@ -150,7 +150,7 @@ def update_stock_base_index(last_update_date, symbol):
         logger.debug("fresh data, no need update, symbol = {0}".format(symbol))
         return
     fetch_days = (last_after_hour_date - last_update_date).days - 1 + 60
-    load_last_stock_days.apply_async((symbol, fetch_days, last_after_hour_date),
+    load_last_stock_days.apply_async((symbol, fetch_days, last_after_hour_date.strftime("%Y-%m-%d")),
                                      link=compute_base_index.s(last_update_date))
     logger.debug("ok")
 
