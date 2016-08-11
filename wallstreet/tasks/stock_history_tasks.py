@@ -4,14 +4,14 @@ from wallstreet.crawel.fetcher import RequestsFetcher
 from wallstreet.crawel.stockapi import YahooHistoryDataAPI, NasdaqStockInfoAPI
 from wallstreet.tasks.celery import app
 from wallstreet import base
-from wallstreet.tasks.stock_storage_tasks import save_stock_day, load_all_stock_info, save_stock_info, load_last_update_date, load_last_stock_days, save_stock_base_index
+from wallstreet.tasks.stock_storage_tasks import save_stock_day, load_all_stock_info, save_stock_info
+from wallstreet.tasks.stock_storage_tasks import load_last_update_date, load_last_stock_days, save_stock_base_index
+from wallstreet.tasks.stock_storage_tasks import compute_base_index
 from celery.utils.log import get_task_logger
 from wallstreet.storage import LastUpdateStorage
 from wallstreet.tasks.task_monitor import task_counter
 from wallstreet.notification.notifier import email_notifier
 from celery.exceptions import Ignore
-from datetime import datetime
-from celery import chain
 from dateutil.parser import parse
 import traceback
 
@@ -150,25 +150,5 @@ def update_stock_base_index(last_update_date, symbol):
         logger.debug("fresh data, no need update, symbol = {0}".format(symbol))
         return
     fetch_days = (last_after_hour_date - last_update_date).days - 1 + 60
-    load_last_stock_days.apply_async((symbol, fetch_days, last_after_hour_date.strftime("%Y-%m-%d")),
-                                     link=compute_base_index.s(last_after_hour_date.strftime("%Y-%m-%d")))
+    compute_base_index.apply_async((symbol, fetch_days, last_after_hour_date.strftime("%Y-%m-%d")))
     logger.debug("ok")
-
-
-@app.task
-def compute_base_index(stock_days, last_update_date):
-    last_update_date = parse(last_update_date)
-    stock_days = [base.StockDay.from_serializable_obj(x) for x in stock_days]
-    stock_days.sort(key=lambda x: x.date, reverse=True)
-    last_update_index = 1
-    for index, stock_day in enumerate(stock_days):
-        if stock_day.date == last_update_date:
-            last_update_index = index
-            break
-    base_indexs = []
-    for index in range(last_update_index - 1, -1, -1):
-        base_index = base.BaseIndex()
-        t = stock_days[index:index + 60]
-        base_index.update(t)
-        base_indexs.append(base_index.serializable_obj())
-    save_stock_base_index.apply_async((base_indexs,))
