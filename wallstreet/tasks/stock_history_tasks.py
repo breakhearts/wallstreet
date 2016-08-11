@@ -61,6 +61,9 @@ def get_all_stock_history(stocks):
 @app.task
 def update_stock_history(last_update_date, symbol):
     last_update_date = parse(last_update_date)
+    if base.get_last_after_hour_date() == last_update_date:
+        logger.debug("fresh data, no need update, symbol={0}".format(symbol))
+        return
     get_stock_history.apply_async((symbol, base.get_next_day_str(last_update_date), None, True,
                                    base.get_day_str(last_update_date)), link=save_stock_day.s())
 
