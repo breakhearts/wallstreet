@@ -100,13 +100,13 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
             ret.sort(key=lambda x: x.date)
             start_index = 0
             for index, t in enumerate(ret):
-                if t.strftime("%Y%m%d") == last_no_dividend:
+                if t.date.strftime("%Y%m%d") == last_no_dividend:
                     if t.adj_factor != 1.0:
                         logger.debug("found dividend, symbol={0}".format(symbol))
                         return get_stock_history((symbol,))
                     if real_start_date < last_no_dividend:
                         break
-                if t.strftime("%Y%m%d") == start_date:
+                if t.date.strftime("%Y%m%d") == start_date:
                     start_index = index
                     if real_start_date < start_date:
                         break
