@@ -4,6 +4,7 @@ from wallstreet.tasks.celery import app, engine, Session
 from celery.utils.log import get_task_logger
 from wallstreet.base import StockDay, StockInfo, BaseIndex
 import traceback
+from wallstreet import base
 from dateutil.parser import parse
 
 logger = get_task_logger(__name__)
@@ -61,6 +62,26 @@ def load_last_stock_days(symbol, limit, end_date):
     stock_days = storage.load_last(symbol, limit, end_date)
     logger.debug("ok, symbol = {0}, total = {1}".format(symbol, len(stock_days)))
     return [x.serializable_obj() for x in stock_days]
+
+
+@app.task
+def compute_base_index(symbol, limit, last_update_date):
+    last_update_date = parse(last_update_date)
+    storage = StockDaySqlStorage(engine, Session)
+    stock_days = storage.load_last(symbol, limit, last_update_date)
+    stock_days.sort(key=lambda x: x.date, reverse=True)
+    last_update_index = 1
+    for index, stock_day in enumerate(stock_days):
+        if stock_day.date == last_update_date:
+            last_update_index = index
+            break
+    base_indexs = []
+    for index in range(last_update_index - 1, -1, -1):
+        base_index = base.BaseIndex()
+        t = stock_days[index:index + 60]
+        base_index.update(t)
+        base_indexs.append(base_index.serializable_obj())
+    save_stock_base_index.apply_async((base_indexs,))
 
 
 @app.task
