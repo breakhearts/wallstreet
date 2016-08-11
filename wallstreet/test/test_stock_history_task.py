@@ -58,6 +58,8 @@ def test_update_stock_base_index():
     stock_info_storage.save(base.StockInfo("FB", "nasdaq"))
     update_all_stock_base_index()
     base_index_storage = BaseIndexSqlStorage(engine, Session)
+    t = base_index_storage.load("FB")
+    assert len(t) == 40
     t = base_index_storage.load_last(symbol="FB", limit=1)
     assert len(t) == 1
     last_update_storage = LastUpdateSqlStorage(engine, Session)

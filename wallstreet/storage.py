@@ -145,7 +145,7 @@ class StockDay(Base):
     low = Column(Float)
     volume = Column(Integer)
     adj_factor = Column(Float)
-    __table_args__ = (Index("symbol_date_index", "symbol", "date"), )
+    __table_args__ = (Index("symbol_date_index", "symbol", "date", unique=True), )
 
 
 class StockDaySqlStorage(StockDayStorage, SqlStorage):
@@ -197,7 +197,7 @@ class LastUpdate(Base):
     symbol = Column(String(32))
     data_type = Column(Integer)
     last_update_date = Column(DateTime)
-    __table_args__ = (Index("symbol_date_type_index", "symbol", "data_type"), )
+    __table_args__ = (Index("symbol_date_type_index", "symbol", "data_type", unique=True), )
 
 
 class LastUpdateSqlStorage(LastUpdateStorage, SqlStorage):
@@ -243,7 +243,7 @@ class BaseIndex(Base):
     vol5 = Column(Integer)
     vol20 = Column(Integer)
     vol60 = Column(Integer)
-    __table_args__ = (Index("symbol_date_index", "symbol", "date"), )
+    __table_args__ = (Index("symbol_date_index", "symbol", "date", unique=True), )
 
 
 class BaseIndexSqlStorage(BaseIndexStorage, SqlStorage):
