@@ -102,10 +102,13 @@ class BaseIndex(object):
         last_60_vol = [x.volume for x in last_60_day]
         self.date = last_60_day[0].date
         self.symbol = last_60_day[0].symbol
-        self.change = len(adj_last_60_close_price) == 1 and 0 or (adj_last_60_close_price[0] / adj_last_60_close_price[1]) - 1
-        self.ma5 = len(last_60_day) >= 5 and sum(adj_last_60_close_price[:5]) / 5 or 0
-        self.ma20 = len(last_60_day) >= 20 and sum(adj_last_60_close_price[:20]) / 20 or 0
-        self.ma60 = len(last_60_day) >= 60 and sum(adj_last_60_close_price[:60]) / 60 or 0
+        if len(adj_last_60_close_price) == 1:
+            self.change = 0
+        else:
+            self.change = (adj_last_60_close_price[0] / adj_last_60_close_price[1]) - 1
+        self.ma5 = len(adj_last_60_close_price) >= 5 and sum(adj_last_60_close_price[:5]) / 5 or 0
+        self.ma20 = len(adj_last_60_close_price) >= 20 and sum(adj_last_60_close_price[:20]) / 20 or 0
+        self.ma60 = len(adj_last_60_close_price) >= 60 and sum(adj_last_60_close_price[:60]) / 60 or 0
         self.vol5 = len(last_60_vol) >= 5 and sum(last_60_vol[:5]) / 5 or 0
         self.vol20 = len(last_60_vol) >= 20 and sum(last_60_vol[:20]) / 20 or 0
         self.vol60 = len(last_60_vol) >= 60 and sum(last_60_vol[:60]) / 60 or 0

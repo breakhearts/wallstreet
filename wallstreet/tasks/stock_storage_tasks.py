@@ -74,7 +74,7 @@ def compute_base_index(symbol, limit, last_update_date):
                      format(symbol, last_update_date, limit))
         return
     stock_days.sort(key=lambda x: x.date, reverse=True)
-    last_update_index = 1
+    last_update_index = len(stock_days)
     for index, stock_day in enumerate(stock_days):
         if stock_day.date == last_update_date:
             last_update_index = index
