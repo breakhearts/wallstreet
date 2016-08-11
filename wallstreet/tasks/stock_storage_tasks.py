@@ -69,8 +69,12 @@ def compute_base_index(symbol, limit, last_update_date):
     last_update_date = parse(last_update_date)
     storage = StockDaySqlStorage(engine, Session)
     stock_days = storage.load_last(symbol, limit, last_update_date)
+    if len(stock_days) == 0:
+        logger.debug("no stock day, symbol = {0}, last_update_date = {1}, limit = {2}".
+                     format(symbol, last_update_date, limit))
+        return
     stock_days.sort(key=lambda x: x.date, reverse=True)
-    last_update_index = 1
+    last_update_index = len(stock_days)
     for index, stock_day in enumerate(stock_days):
         if stock_day.date == last_update_date:
             last_update_index = index
@@ -82,6 +86,7 @@ def compute_base_index(symbol, limit, last_update_date):
         base_index.update(t)
         base_indexs.append(base_index.serializable_obj())
     save_stock_base_index.apply_async((base_indexs,))
+    logger.debug("ok, symbol = {0}, last_update_date = {1}, limit = {2}".format(symbol, last_update_date, limit))
 
 
 @app.task
