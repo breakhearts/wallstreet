@@ -145,7 +145,7 @@ class StockDay(Base):
     low = Column(Float)
     volume = Column(Integer)
     adj_factor = Column(Float)
-    __table_args__ = (Index("symbol_date_index", "symbol", "date"), )
+    __table_args__ = (Index("symbol_date_index", "symbol", "date", unique=True), )
 
 
 class StockDaySqlStorage(StockDayStorage, SqlStorage):
