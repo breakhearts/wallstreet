@@ -205,7 +205,7 @@ class LastUpdateSqlStorage(LastUpdateStorage, SqlStorage):
     def __save(self, symbol, data_type, last_update_date):
         session = self.Session()
         t = session.query(LastUpdate).filter(LastUpdate.symbol == symbol)\
-            .filter(LastUpdate.data_type == LastUpdateStorage.STOCK_DAY).first()
+            .filter(LastUpdate.data_type == data_type).first()
         if t:
             t.last_update_date = last_update_date
         else:

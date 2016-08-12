@@ -85,8 +85,9 @@ def compute_base_index(symbol, limit, last_update_date):
         t = stock_days[index:index + 60]
         base_index.update(t)
         base_indexs.append(base_index.serializable_obj())
-    save_stock_base_index.apply_async((base_indexs,))
+    #save_stock_base_index.apply_async((base_indexs,))
     logger.debug("ok, symbol = {0}, last_update_date = {1}, limit = {2}".format(symbol, last_update_date, limit))
+    save_stock_base_index(base_indexs)
 
 
 @app.task
