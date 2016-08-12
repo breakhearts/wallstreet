@@ -49,6 +49,7 @@ class NasdaqStockInfoAPI(StockInfoAPI):
         for line in content.splitlines()[1:]:
             t = [x.strip('"') for x in line.split('",')]
             symbol, name, last_sale, market_cap, adr_tso, ipo_year, sector, industry, summary_quote = t[:9]
+            symbol = symbol.strip()
             if symbol not in symbols and symbol.find("^") == -1:
                 data.append(StockInfo(symbol, exchange))
                 symbols[symbol] = True
