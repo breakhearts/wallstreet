@@ -102,7 +102,7 @@ class BaseIndex(object):
         last_60_vol = [x.volume for x in last_60_day]
         self.date = last_60_day[0].date
         self.symbol = last_60_day[0].symbol
-        if len(adj_last_60_close_price) == 1:
+        if len(adj_last_60_close_price) == 1 or adj_last_60_close_price[1] == 0:
             self.change = 0
         else:
             self.change = (adj_last_60_close_price[0] / adj_last_60_close_price[1]) - 1

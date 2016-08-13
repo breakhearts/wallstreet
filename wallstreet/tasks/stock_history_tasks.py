@@ -77,7 +77,8 @@ class StockHistoryTasks(Task):
 
 
 @app.task(base=StockHistoryTasks, bind=True, max_retries=3, default_retry_delay=30)
-def get_stock_history(self, symbol, start_date=None, end_date=None, check_dividend=False, last_no_dividend=None):
+def get_stock_history(self, symbol, start_date=None, end_date=None, check_dividend=False, last_no_dividend=None,
+                      timeout=config.get("fetcher", "timeout")):
     api = YahooHistoryDataAPI()
     if check_dividend and last_no_dividend != start_date:
         assert last_no_dividend is not None
@@ -85,7 +86,7 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
     else:
         real_start_date = start_date
     url, method, headers, data = api.get_url_params(symbol, real_start_date, end_date)
-    fetcher = RequestsFetcher(timeout=config.get_int("fetcher", "timeout"))
+    fetcher = RequestsFetcher(timeout=timeout)
     task_counter.new("HISTORY_TASKS")
     try:
         status_code, content = fetcher.fetch(url, method, headers, data)
@@ -119,7 +120,7 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
             raise exc
         else:
             logger.error(traceback.format_exc())
-            raise self.retry(exc=exc)
+            raise self.retry(exc=exc, timeout=config.get("fetcher","timeout") * min(self.request.retries+1, 5))
 
 @app.task
 def report_tasks():
