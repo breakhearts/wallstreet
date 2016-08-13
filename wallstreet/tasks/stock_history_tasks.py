@@ -127,7 +127,7 @@ def report_tasks():
     t = task_counter.report()
     s = ""
     for item, count in t.items():
-        s += "{0}\t{1}\n".format(item, count)
+        s += "{0}\t{1}<br>".format(item, count)
     email_notifier.send_text("wallstreet daily report", s)
     task_counter.reset()
 
