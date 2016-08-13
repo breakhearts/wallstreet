@@ -74,7 +74,11 @@ def compute_base_index(symbol, limit, last_update_date):
                      format(symbol, last_update_date, limit))
         return
     stock_days.sort(key=lambda x: x.date, reverse=True)
-    last_update_index = len(stock_days)
+    if len(stock_days) < 2:
+        logger.debug("less then 2 days, symbol = {0}, last_update_date = {1}, limit = {2}".
+                     format(symbol, last_update_date, limit))
+        return
+    last_update_index = len(stock_days) - 1
     for index, stock_day in enumerate(stock_days):
         if stock_day.date == last_update_date:
             last_update_index = index
