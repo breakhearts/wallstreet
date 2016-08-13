@@ -120,7 +120,7 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
             raise exc
         else:
             logger.error(traceback.format_exc())
-            raise self.retry(exc=exc, timeout=config.get("fetcher","timeout") * min(self.request.retries+1, 5)
+            raise self.retry(exc=exc, timeout=config.get("fetcher","timeout") * min(self.request.retries+1, 5))
 
 @app.task
 def report_tasks():
