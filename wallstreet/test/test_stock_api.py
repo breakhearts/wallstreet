@@ -19,7 +19,7 @@ class TestYahooStockHistoryAPI:
         fetcher = RequestsFetcher()
         status_code, content = fetcher.fetch(url, method, headers, data)
         assert status_code == 200
-        days = api.parse_ret("BIDU", content.decode('utf-8'))
+        days = api.parse_ret("BIDU", content)
         assert len(days) == 3
         day_last = days[0]
         assert day_last.symbol == "BIDU"
@@ -32,5 +32,5 @@ class TestNasdaqStockInfoAPI:
         url, method, headers, data = api.get_url_params("NASDAQ")
         fetcher = RequestsFetcher()
         status_code, content = fetcher.fetch(url, method, headers, data)
-        stock_infos = api.parse_ret("NASDAQ", content.decode('utf-8'))
+        stock_infos = api.parse_ret("NASDAQ", content)
         assert len(stock_infos) > 100

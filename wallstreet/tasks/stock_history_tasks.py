@@ -37,7 +37,7 @@ def update_stock_info(self, exchange):
         if status_code != 200:
             logger.debug("status_code={0}".format(status_code))
             raise self.retry()
-        ret = api.parse_ret(exchange, content.decode("utf-8"))
+        ret = api.parse_ret(exchange, content)
         logger.debug("ok, exchange={0}, total={1}".format(exchange, len(ret)))
         return [x.serializable_obj() for x in ret]
     except Exception as exc:
@@ -96,7 +96,7 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
                 raise Ignore()
             else:
                 raise self.retry()
-        ret = api.parse_ret(symbol, content.decode("utf-8"))
+        ret = api.parse_ret(symbol, content)
         if check_dividend and last_no_dividend != start_date:
             ret.sort(key=lambda x: x.date)
             start_index = 0
@@ -120,7 +120,8 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
             raise exc
         else:
             logger.error(traceback.format_exc())
-            raise self.retry(exc=exc, timeout=config.get("fetcher","timeout") * min(self.request.retries+1, 5))
+            raise self.retry(exc=exc, timeout=config.get("fetcher", "timeout") * min(self.request.retries+1, 5))
+
 
 @app.task
 def report_tasks():
