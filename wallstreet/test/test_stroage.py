@@ -55,6 +55,9 @@ class TestStockDaySqlStorage:
         t = storage.load_last("BIDU", 1, end_date=datetime(2015, 2, 18))
         assert len(t) == 1
         assert t[0].date == datetime(2015, 2, 17)
+        storage.delete('BIDU')
+        t = storage.load("BIDU")
+        assert len(t) == 0
 
 
 class TestLastUpdate:
@@ -98,3 +101,6 @@ class TestBaseIndexSqlStorage:
         assert len(t) == 2
         t = storage.load_last("BIDU", 2)
         assert len(t) == 2
+        storage.delete('BIDU')
+        t = storage.load("BIDU")
+        assert len(t) == 0

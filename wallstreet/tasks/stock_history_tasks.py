@@ -6,7 +6,7 @@ from wallstreet.tasks.celery import app
 from wallstreet import base
 from wallstreet.tasks.stock_storage_tasks import save_stock_day, load_all_stock_info, save_stock_info
 from wallstreet.tasks.stock_storage_tasks import load_last_update_date, load_last_stock_days, save_stock_base_index
-from wallstreet.tasks.stock_storage_tasks import compute_base_index
+from wallstreet.tasks.stock_storage_tasks import compute_base_index, clear_stock
 from celery.utils.log import get_task_logger
 from wallstreet.storage import LastUpdateStorage
 from wallstreet.tasks.task_monitor import task_counter
@@ -104,6 +104,8 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
                 if t.date.strftime("%Y%m%d") == last_no_dividend:
                     if t.adj_factor != 1.0:
                         logger.debug("found dividend, symbol={0}".format(symbol))
+                        clear_stock.apply_async((symbol, ),
+                                                link=get_stock_history.s(symbol, None, None, False, None, timeout))
                         return get_stock_history((symbol,))
                     if real_start_date < last_no_dividend:
                         break
