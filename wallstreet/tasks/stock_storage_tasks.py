@@ -109,3 +109,12 @@ def save_stock_base_index(stock_base_indexs):
         except Exception as exc:
             logger.error(traceback.format_exc())
         logger.debug("ok, symbol = {0}".format(stock_base_indexs[0].symbol))
+
+
+@app.task
+def clear_stock(symbol):
+    storage = StockDaySqlStorage(engine, Session)
+    storage.delete(symbol)
+    storage = BaseIndexSqlStorage(engine, Session)
+    storage.delete(symbol)
+    logger.debug("ok, symbol ={0}".find(symbol))

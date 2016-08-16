@@ -6,7 +6,7 @@ from wallstreet.tasks.celery import app
 from wallstreet import base
 from wallstreet.tasks.stock_storage_tasks import save_stock_day, load_all_stock_info, save_stock_info
 from wallstreet.tasks.stock_storage_tasks import load_last_update_date, load_last_stock_days, save_stock_base_index
-from wallstreet.tasks.stock_storage_tasks import compute_base_index
+from wallstreet.tasks.stock_storage_tasks import compute_base_index, clear_stock
 from celery.utils.log import get_task_logger
 from wallstreet.storage import LastUpdateStorage
 from wallstreet.tasks.task_monitor import task_counter
@@ -37,7 +37,7 @@ def update_stock_info(self, exchange):
         if status_code != 200:
             logger.debug("status_code={0}".format(status_code))
             raise self.retry()
-        ret = api.parse_ret(exchange, content.decode("utf-8"))
+        ret = api.parse_ret(exchange, content)
         logger.debug("ok, exchange={0}, total={1}".format(exchange, len(ret)))
         return [x.serializable_obj() for x in ret]
     except Exception as exc:
@@ -96,7 +96,7 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
                 raise Ignore()
             else:
                 raise self.retry()
-        ret = api.parse_ret(symbol, content.decode("utf-8"))
+        ret = api.parse_ret(symbol, content)
         if check_dividend and last_no_dividend != start_date:
             ret.sort(key=lambda x: x.date)
             start_index = 0
@@ -104,6 +104,8 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
                 if t.date.strftime("%Y%m%d") == last_no_dividend:
                     if t.adj_factor != 1.0:
                         logger.debug("found dividend, symbol={0}".format(symbol))
+                        clear_stock.apply_async((symbol, ),
+                                                link=get_stock_history.s(symbol, None, None, False, None, timeout))
                         return get_stock_history((symbol,))
                     if real_start_date < last_no_dividend:
                         break
@@ -120,14 +122,15 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
             raise exc
         else:
             logger.error(traceback.format_exc())
-            raise self.retry(exc=exc, timeout=config.get("fetcher","timeout") * min(self.request.retries+1, 5))
+            raise self.retry(exc=exc, timeout=config.get("fetcher", "timeout") * min(self.request.retries+1, 5))
+
 
 @app.task
 def report_tasks():
     t = task_counter.report()
     s = ""
     for item, count in t.items():
-        s += "{0}\t{1}\n".format(item, count)
+        s += "{0}\t{1}<br>".format(item, count)
     email_notifier.send_text("wallstreet daily report", s)
     task_counter.reset()
 

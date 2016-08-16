@@ -47,6 +47,15 @@ class StockDayStorage(object):
         """
         raise NotImplementedError
 
+    def delete(self, symbol, start_date=None, end_date=None):
+        """
+        :param symbol:
+        :param start_date:
+        :param end_date:
+        :return:
+        """
+        raise NotImplementedError
+
 
 class LastUpdateStorage(object):
     STOCK_DAY = 1
@@ -83,6 +92,9 @@ class BaseIndexStorage(object):
     def load_last(self, symbol, limit):
         raise NotImplementedError
 
+    def delete(self, symbol, start_date=None, end_date=None):
+        raise NotImplementedError
+
 Base = declarative_base()
 
 
@@ -109,28 +121,46 @@ class StockInfoSqlStorage(StockInfoStorage, SqlStorage):
         if not isinstance(stock_infos, list):
             stock_infos = [stock_infos]
         session = self.Session()
-        for stock_info in stock_infos:
-            old_stock_info = session.query(StockInfo).filter_by(symbol=stock_info.symbol).first()
-            if old_stock_info:
-                for k, v in stock_info.__dict__.items():
-                    setattr(old_stock_info, k, v)
-            else:
-                session.add(StockInfo(symbol=stock_info.symbol, exchange=stock_info.exchange))
-        session.commit()
+        try:
+            for stock_info in stock_infos:
+                old_stock_info = session.query(StockInfo).filter_by(symbol=stock_info.symbol).first()
+                if old_stock_info:
+                    for k, v in stock_info.__dict__.items():
+                        setattr(old_stock_info, k, v)
+                else:
+                    session.add(StockInfo(symbol=stock_info.symbol, exchange=stock_info.exchange))
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     def load(self, symbol):
         session = self.Session()
         t = session.query(StockInfo).filter(StockInfo.symbol == symbol).first()
-        stock_info = t and base.StockInfo(t.symbol, t.exchange) or None
-        session.commit()
+        try:
+            stock_info = t and base.StockInfo(t.symbol, t.exchange) or None
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
         return stock_info
 
     def load_all(self):
-        session = self.Session()
         ret = []
-        for t in session.query(StockInfo):
-            ret.append(base.StockInfo(t.symbol, t.exchange))
-        session.commit()
+        session = self.Session()
+        try:
+            for t in session.query(StockInfo):
+                ret.append(base.StockInfo(t.symbol, t.exchange))
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
         return ret
 
 
@@ -153,42 +183,69 @@ class StockDaySqlStorage(StockDayStorage, SqlStorage):
         if not isinstance(stock_days, list):
             stock_days = [stock_days]
         session = self.Session()
-        for stock_day in stock_days:
-            #old_stock_day = session.query(StockDay).\
-            #    filter(StockDay.symbol == stock_day.symbol).filter(StockDay.date == stock_day.date).first()
-            #if old_stock_day:
-            #    for k, v in stock_day.__dict__.items():
-            #        setattr(old_stock_day, k, v)
-            #else:
-            #    session.add(StockDay(**stock_day.__dict__))
-            session.add(StockDay(**stock_day.__dict__))
-        session.commit()
+        try:
+            for stock_day in stock_days:
+                session.add(StockDay(**stock_day.__dict__))
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     def load(self, symbol, start_date=None, end_date=None):
         session = self.Session()
-        records = session.query(StockDay).filter(StockDay.symbol == symbol)
-        if start_date:
-            records = records.filter(StockDay.date >= start_date)
-        if end_date:
-            records = records.filter(StockDay.date <= end_date)
-        ret = []
-        for t in records:
-            ret.append(base.StockDay(t.symbol, t.date, t.open, t.close, t.high, t.low, t.volume, t.adj_factor))
-        session.commit()
+        try:
+            records = session.query(StockDay).filter(StockDay.symbol == symbol)
+            if start_date:
+                records = records.filter(StockDay.date >= start_date)
+            if end_date:
+                records = records.filter(StockDay.date <= end_date)
+            ret = []
+            for t in records:
+                ret.append(base.StockDay(t.symbol, t.date, t.open, t.close, t.high, t.low, t.volume, t.adj_factor))
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
         return ret
 
     def load_last(self, symbol, limit, end_date=None):
         session = self.Session()
-        if end_date:
-            records = session.query(StockDay).filter(StockDay.symbol == symbol).filter(StockDay.date <= end_date)\
-                .order_by(StockDay.date.desc()).limit(limit)
-        else:
-            records = session.query(StockDay).filter(StockDay.symbol == symbol).order_by(StockDay.date.desc()).limit(limit)
         ret = []
-        for t in records:
-            ret.append(base.StockDay(t.symbol, t.date, t.open, t.close, t.high, t.low, t.volume, t.adj_factor))
-        session.commit()
+        try:
+            if end_date:
+                records = session.query(StockDay).filter(StockDay.symbol == symbol).filter(StockDay.date <= end_date)\
+                    .order_by(StockDay.date.desc()).limit(limit)
+            else:
+                records = session.query(StockDay).filter(StockDay.symbol == symbol).order_by(StockDay.date.desc()).limit(limit)
+            for t in records:
+                ret.append(base.StockDay(t.symbol, t.date, t.open, t.close, t.high, t.low, t.volume, t.adj_factor))
+            session.commit()
+        except:
+            session.rollback()
+        finally:
+            session.close()
         return ret
+
+    def delete(self, symbol, start_date=None, end_date=None):
+        session = self.Session()
+        try:
+            records = session.query(StockDay).filter(StockDay.symbol == symbol)
+            if start_date:
+                records = records.filter(StockDay.date >= start_date)
+            if end_date:
+                records = records.filter(StockDay.date <= end_date)
+            for t in records:
+                session.delete(t)
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
 
 class LastUpdate(Base):
@@ -204,24 +261,36 @@ class LastUpdateSqlStorage(LastUpdateStorage, SqlStorage):
 
     def __save(self, symbol, data_type, last_update_date):
         session = self.Session()
-        t = session.query(LastUpdate).filter(LastUpdate.symbol == symbol)\
-            .filter(LastUpdate.data_type == data_type).first()
-        if t:
-            t.last_update_date = last_update_date
-        else:
-            session.add(LastUpdate(symbol=symbol, data_type=data_type,
-                                   last_update_date=last_update_date))
-        session.commit()
+        try:
+            t = session.query(LastUpdate).filter(LastUpdate.symbol == symbol)\
+                .filter(LastUpdate.data_type == data_type).first()
+            if t:
+                t.last_update_date = last_update_date
+            else:
+                session.add(LastUpdate(symbol=symbol, data_type=data_type,
+                                       last_update_date=last_update_date))
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     def __load(self, symbol, data_type):
         session = self.Session()
-        t = session.query(LastUpdate).filter(LastUpdate.symbol == symbol)\
-            .filter(LastUpdate.data_type == data_type).first()
-        if t is None:
-            last_update_date = None
-        else:
-            last_update_date = t.last_update_date
-        session.commit()
+        try:
+            t = session.query(LastUpdate).filter(LastUpdate.symbol == symbol)\
+                .filter(LastUpdate.data_type == data_type).first()
+            if t is None:
+                last_update_date = None
+            else:
+                last_update_date = t.last_update_date
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
         return last_update_date
 
     def load(self, symbol, data_type):
@@ -251,31 +320,66 @@ class BaseIndexSqlStorage(BaseIndexStorage, SqlStorage):
         if not isinstance(base_indexs, list):
             base_indexs = [base_indexs]
         session = self.Session()
-        for base_index in base_indexs:
-            session.add(BaseIndex(**base_index.__dict__))
-        session.commit()
+        try:
+            for base_index in base_indexs:
+                session.add(BaseIndex(**base_index.__dict__))
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     def load(self, symbol, start_date=None, end_date=None):
         session = self.Session()
-        records = session.query(BaseIndex).filter(BaseIndex.symbol == symbol)
-        if start_date:
-            records = records.filter(BaseIndex.date >= start_date)
-        if end_date:
-            records = records.filter(BaseIndex.date <= end_date)
-        ret = []
-        for t in records:
-            ret.append(base.BaseIndex(t.symbol, t.date, t.change, t.ma5, t.ma20, t.ma60, t.vol5, t.vol20, t.vol60))
-        session.commit()
+        try:
+            records = session.query(BaseIndex).filter(BaseIndex.symbol == symbol)
+            if start_date:
+                records = records.filter(BaseIndex.date >= start_date)
+            if end_date:
+                records = records.filter(BaseIndex.date <= end_date)
+            ret = []
+            for t in records:
+                ret.append(base.BaseIndex(t.symbol, t.date, t.change, t.ma5, t.ma20, t.ma60, t.vol5, t.vol20, t.vol60))
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
         return ret
 
     def load_last(self, symbol, limit):
         session = self.Session()
-        records = session.query(BaseIndex).filter(BaseIndex.symbol == symbol).order_by(BaseIndex.date.desc()).limit(limit)
-        ret = []
-        for t in records:
-            ret.append(base.BaseIndex(t.symbol, t.date, t.change, t.ma5, t.ma20, t.ma60, t.vol5, t.vol20, t.vol60))
-        session.commit()
+        try:
+            records = session.query(BaseIndex).filter(BaseIndex.symbol == symbol).order_by(BaseIndex.date.desc()).limit(limit)
+            ret = []
+            for t in records:
+                ret.append(base.BaseIndex(t.symbol, t.date, t.change, t.ma5, t.ma20, t.ma60, t.vol5, t.vol20, t.vol60))
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
         return ret
+
+    def delete(self, symbol, start_date=None, end_date=None):
+        session = self.Session()
+        try:
+            records = session.query(BaseIndex).filter(BaseIndex.symbol == symbol)
+            if start_date:
+                records = records.filter(StockDay.date >= start_date)
+            if end_date:
+                records = records.filter(StockDay.date <= end_date)
+            for t in records:
+                session.delete(t)
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
 
 def create_sql_table(engine):

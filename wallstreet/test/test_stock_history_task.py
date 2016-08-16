@@ -18,15 +18,6 @@ def engine_and_session_cls(request):
     request.addfinalizer(teardown)
 
 
-def test_stock_history_task():
-    days = get_stock_history("BIDU", start_date="20150218", end_date="20150220")
-    days = [base.StockDay.from_serializable_obj(x) for x in days]
-    assert len(days) == 3
-    day_last = days[0]
-    assert day_last.symbol == "BIDU"
-    assert day_last.date == datetime(2015, 2, 20)
-
-
 def test_get_all_stock_history(engine_and_session_cls):
     # insert data
     storage = StockInfoSqlStorage(engine, Session)

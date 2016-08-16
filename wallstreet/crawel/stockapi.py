@@ -3,6 +3,7 @@ from datetime import datetime
 from wallstreet.base import StockDay, StockInfo
 from dateutil.parser import parse
 from wallstreet import base
+import json
 
 
 class StockInfoAPI(object):
@@ -21,6 +22,26 @@ class StockInfoAPI(object):
         raise NotImplementedError
 
 
+class NasdaqStockInfoAPI(StockInfoAPI):
+    def get_url_params(self, exchange):
+        query = "http://www.nasdaq.com/screening/companies-by-industry.aspx?exchange={0}&render=download"\
+            .format(exchange)
+        return query, "GET", {"user-agent": base.random_ua()}, {}
+
+    def parse_ret(self, exchange, content):
+        content = content.decode('utf-8')
+        data = []
+        symbols = {}
+        for line in content.splitlines()[1:]:
+            t = [x.strip('"') for x in line.split('",')]
+            symbol, name, last_sale, market_cap, adr_tso, ipo_year, sector, industry, summary_quote = t[:9]
+            symbol = symbol.strip()
+            if symbol not in symbols and symbol.find("^") == -1:
+                data.append(StockInfo(symbol, exchange))
+                symbols[symbol] = True
+        return data
+
+
 class HistoryDataAPI(object):
     def get_url_params(self, stock, start_date=None, end_date=None):
         """
@@ -37,25 +58,6 @@ class HistoryDataAPI(object):
         raise NotImplementedError
 
 
-class NasdaqStockInfoAPI(StockInfoAPI):
-    def get_url_params(self, exchange):
-        query = "http://www.nasdaq.com/screening/companies-by-industry.aspx?exchange={0}&render=download"\
-            .format(exchange)
-        return query, "GET", {"user-agent": base.random_ua()}, {}
-
-    def parse_ret(self, exchange, content):
-        data = []
-        symbols = {}
-        for line in content.splitlines()[1:]:
-            t = [x.strip('"') for x in line.split('",')]
-            symbol, name, last_sale, market_cap, adr_tso, ipo_year, sector, industry, summary_quote = t[:9]
-            symbol = symbol.strip()
-            if symbol not in symbols and symbol.find("^") == -1:
-                data.append(StockInfo(symbol, exchange))
-                symbols[symbol] = True
-        return data
-
-
 class YahooHistoryDataAPI(HistoryDataAPI):
     def get_url_params(self, stock, start_date=None, end_date=None):
         query = "?s={0}&g=d&ignore=.csv".format(stock)
@@ -69,6 +71,7 @@ class YahooHistoryDataAPI(HistoryDataAPI):
         return api, "GET", {"user-agent": base.random_ua()}, {}
 
     def parse_ret(self, stock, content):
+        content = content.decode('utf-8')
         data = []
         for line in content.splitlines()[1:]:
             t = line.split(",")
@@ -78,3 +81,109 @@ class YahooHistoryDataAPI(HistoryDataAPI):
                 adj_factor = close > 0 and adj_close / close or 1.0
                 data.append(StockDay(stock.upper(), parse(date), open, close, high, low, volume, adj_factor))
         return data
+
+
+class QuarterReportAPI(object):
+    """
+    get quarter financial report, note not all company submit this report
+    """
+    def get_url_params(self, symbol, start_year, start_quarter, end_year, end_quarter):
+        raise NotImplementedError
+
+    def parse_ret(self, symbol, content):
+        raise NotImplementedError
+
+
+class YearReportAPI(object):
+    """
+    get year financial report, all company submit this report
+    """
+    def get_url_params(self, symbol, start_year, end_year):
+        raise NotImplementedError
+
+    def parse_ret(self, symbol, content):
+        raise NotImplementedError
+
+
+class InsiderIssuesAPI(object):
+    """
+    get recent insider issues
+    """
+    def get_url_params(self, symbol):
+        raise NotImplementedError
+
+    def parse_ret(self, symbol, content):
+        raise NotImplementedError
+
+
+class IssueHolderAPI(object):
+    def get_url_params(self, symbol):
+        raise NotImplementedError
+
+    def parse_ret(self, symbol, content):
+        raise NotImplementedError
+
+
+class EdgarAPI(object):
+    def __init__(self, key):
+        self.key = key
+
+
+class EdgarQuarterReportAPI(QuarterReportAPI, EdgarAPI):
+    def get_url_params(self, symbol, start_year, start_quarter, end_year, end_quarter):
+        api = 'http://edgaronline.api.mashery.com/v2/corefinancials/qtr?primarysymbols={0}&fiscalperiod={1}q{2}~{3}q{4}'\
+              '&appkey={5}'.format(symbol, start_year, start_quarter, end_year, end_quarter, self.key)
+        headers = {
+            "Accept": "application/json, text/javascript, */*; q=0.01"
+        }
+        return api, "GET", headers, {}
+
+    def parse_ret(self, symbol, content):
+        pass
+
+
+class EdgarYearReportAPI(YearReportAPI, EdgarAPI):
+    def get_url_params(self, symbol, start_year, end_year):
+        api = 'http://edgaronline.api.mashery.com/v2/corefinancials/ann?primarysymbols={0}&fiscalperiod={1}q{2}~{3}q{4}'\
+              '&appkey={5}'.format(symbol, start_year, 1, end_year, 4, self.key)
+        headers = {
+            "Accept": "application/json, text/javascript, */*; q=0.01"
+        }
+        return api, "GET", headers, {}
+
+    def parse_ret(self, symbol, content):
+        pass
+
+
+class EdgarInsiderIssuesAPI(InsiderIssuesAPI, EdgarAPI):
+    def get_url_params(self, symbol):
+        api = 'http://edgaronline.api.mashery.com/v2/insiders/issues?' \
+              'fields=issueticker,issueid,transactiondate,filername,transactiontype,ownershiptype,relationship,transactionpricefrom,transactionpriceto&' \
+              'filter=issueticker in ({0}) &appkey={1}&limit=9999'.format(symbol, self.key)
+        headers = {
+            "Accept": "application/json, text/javascript, */*; q=0.01"
+        }
+        return api, "GET", headers, {}
+
+    def parse_ret(self, symbol, content):
+        raise NotImplementedError
+
+
+class EdgarIssueHolderAPI(IssueHolderAPI, EdgarAPI):
+    def get_url_params(self, symbol):
+        api = 'http://edgaronline.api.mashery.com/v2/ownerships/currentissueholders?' \
+              'filter=ticker in ({0}) &appkey={1}&limit=9999&' \
+              'fields=modifiedsince,ticker,ownername,issueid,currentreportdate,priorreportdate,sharesheld,sharesheldchange,sharesheldpercentchange,portfoliopercent,sharesoutpercent'.format(
+            symbol, self.key)
+        headers = {
+            "Accept": "application/json, text/javascript, */*; q=0.01"
+        }
+        return api, "GET", headers, {}
+
+    def parse_ret(self, symbol, content):
+        raise NotImplementedError
+
+
+
+
+
