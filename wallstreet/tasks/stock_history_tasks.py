@@ -99,7 +99,7 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
         ret = api.parse_ret(symbol, content)
         if check_dividend and last_no_dividend != start_date:
             ret.sort(key=lambda x: x.date)
-            start_index = 0
+            start_index = len(ret)
             for index, t in enumerate(ret):
                 if t.date.strftime("%Y%m%d") == last_no_dividend:
                     if t.adj_factor != 1.0:
