@@ -110,6 +110,10 @@ CELERY_ROUTES = {
         'queue': 'stock_storage_tasks',
         'routing_key': 'stock_storage_tasks.compute_base_index'
     },
+    'wallstreet.tasks.stock_storage_tasks.clear_stock': {
+        'queue': 'stock_storage_tasks',
+        'routing_key': 'stock_storage_tasks.clear_stock'
+    },
 }
 
 CELERY_ANNOTATIONS = {'wallstreet.tasks.stock_history_tasks.get_stock_history': {'rate_limit': '60/m'}}
