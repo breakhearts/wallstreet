@@ -116,4 +116,4 @@ CELERY_ROUTES = {
     },
 }
 
-CELERY_ANNOTATIONS = {'wallstreet.tasks.stock_history_tasks.get_stock_history': {'rate_limit': '60/m'}}
+CELERY_ANNOTATIONS = {'wallstreet.tasks.stock_history_tasks.get_stock_history': {'rate_limit': '1/s'}}
