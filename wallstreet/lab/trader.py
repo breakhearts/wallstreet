@@ -14,25 +14,28 @@ class Trader(object):
         raise NotImplementedError
 
     def eval(self, X_and_prices, init_capital=1000000):
-        X, prices = X_and_prices
         capital = init_capital
         shareholders = 0
-        for i, x in enumerate(X):
-            price = prices[i]
+        last_price = 0
+        count = 0
+        for i, t in enumerate(X_and_prices):
+            X, price = t
             _open, low, high, close = price
-            op, price, count = self.predict(X, price, shareholders, capital)
+            op, price, count = self.predict(t, shareholders, capital)
             if op == Trader.BUY:
                 assert count * price <= capital
                 assert low <= price <= high
-                capital -= price * price
+                capital -= price * count
                 shareholders += count
             elif op == Trader.SELL:
-                assert count * price <= capital
+                assert count <= shareholders
                 assert low <= price <= high
-                capital += price * price
+                capital += price * count
                 shareholders -= count
-        profit = (capital + shareholders * prices[-1] / float(init_capital)) - 1
-        avg_profit = profit / len(X)
+            last_price = price
+            count += 1
+        profit = ((capital + shareholders * last_price) / float(init_capital)) - 1
+        avg_profit = count > 0 and profit / count or 0
         return profit, avg_profit
 
     def eval_batch(self, X_and_price_batch, init_capital=1000000):
@@ -99,9 +102,21 @@ class SimpleMATrader(Trader):
             t = ma20
         else:
             t = ma60
+        if t == 0:
+            return Trader.HOLD, 0, 0
         if shareholders > 0 and low <= t:
-            return Trader.SELL, shareholders, t
+            price = min(max(low, t), high)
+            return Trader.SELL, price, shareholders
         elif high >= t:
-            return Trader.BUY, int(capital / t), t
+            price = min(max(low, t), high)
+            return Trader.BUY, price, int(capital / price)
         else:
             return Trader.HOLD, 0, 0
+
+if __name__ == "__main__":
+    from wallstreet.storage import create_sql_engine_and_session_cls
+    from wallstreet import config
+    engine, Session = create_sql_engine_and_session_cls(config.get("storage", "url"))
+    iterator = batch_MA_iterator(["BANC"], engine, Session)
+    trader = SimpleMATrader()
+    trader.fit(iterator)
