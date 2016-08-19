@@ -72,7 +72,6 @@ def update_stock_history(last_update_date, symbol):
         get_stock_history.apply_async((symbol, None, None, None, False, None), link=save_stock_day.s())
 
 
-
 class StockHistoryTasks(Task):
     abstract = True
 
@@ -161,5 +160,5 @@ def update_stock_base_index(last_update_date, symbol):
         logger.debug("fresh data, no need update, symbol = {0}".format(symbol))
         return
     fetch_days = (last_after_hour_date - last_update_date).days - 1 + 60
-    compute_base_index.apply_async((symbol, fetch_days, last_after_hour_date.strftime("%Y-%m-%d")))
+    compute_base_index.apply_async((symbol, fetch_days, last_update_date.strftime("%Y-%m-%d")))
     logger.debug("ok")
