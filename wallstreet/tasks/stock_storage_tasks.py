@@ -65,10 +65,11 @@ def load_last_stock_days(symbol, limit, end_date):
 
 
 @app.task
-def compute_base_index(symbol, limit, last_update_date):
+def compute_base_index(symbol, limit, last_update_date, end_date):
     last_update_date = parse(last_update_date)
+    end_date = parse(end_date)
     storage = StockDaySqlStorage(engine, Session)
-    stock_days = storage.load_last(symbol, limit, last_update_date)
+    stock_days = storage.load_last(symbol, limit, end_date)
     if len(stock_days) == 0:
         logger.debug("no stock day, symbol = {0}, last_update_date = {1}, limit = {2}".
                      format(symbol, last_update_date, limit))
