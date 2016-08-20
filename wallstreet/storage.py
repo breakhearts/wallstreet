@@ -3,7 +3,7 @@ storage
 """
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Float, DateTime, Index
+from sqlalchemy import Column, Integer, String, Float, Text, DateTime, Index
 from sqlalchemy.orm import sessionmaker
 from wallstreet import base
 
@@ -380,6 +380,54 @@ class BaseIndexSqlStorage(BaseIndexStorage, SqlStorage):
             raise
         finally:
             session.close()
+
+
+class RawYearFiscalReport(Base):
+    __tablename__ = "raw_year_fiscal_report"
+    id = Column(Integer, primary_key=True)
+    symbol = Column(String(32))
+    fiscal_period = Column(String(6))
+    content = Column(Text)
+
+
+class RawYearFiscalReportStorage(object):
+    def save(self, reports):
+        raise NotImplementedError
+
+    def load(self, symbol, start_period=None, end_period=None):
+        raise NotImplementedError
+
+
+class RawYearFiscalReportSqlStorage(SqlStorage, RawYearFiscalReportStorage):
+    def save(self, reports):
+        pass
+
+    def load(self, symbol, start_period=None, end_period=None):
+        pass
+
+
+class RawQuarterFiscalReport(Base):
+    __tablename__ = "raw_quarter_fiscal_report"
+    id = Column(Integer, primary_key=True)
+    symbol = Column(String(32))
+    fiscal_period = Column(String(6))
+    content = Column(Text)
+
+
+class RawQuarterFiscalReportStorage(object):
+    def save(self, reports):
+        raise NotImplementedError
+
+    def load(self, symbol, start_period=None, end_period=None):
+        raise NotImplementedError
+
+
+class RawQuarterFiscalReportSqlStorage(SqlStorage, RawQuarterFiscalReportStorage):
+    def save(self, reports):
+        pass
+
+    def load(self, symbol, start_period=None, end_period=None):
+        pass
 
 
 def create_sql_table(engine):

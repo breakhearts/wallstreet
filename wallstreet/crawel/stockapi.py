@@ -131,28 +131,48 @@ class EdgarAPI(object):
 
 class EdgarQuarterReportAPI(QuarterReportAPI, EdgarAPI):
     def get_url_params(self, symbol, start_year, start_quarter, end_year, end_quarter):
-        api = 'http://edgaronline.api.mashery.com/v2/corefinancials/qtr?primarysymbols={0}&fiscalperiod={1}q{2}~{3}q{4}'\
-              '&appkey={5}'.format(symbol, start_year, start_quarter, end_year, end_quarter, self.key)
+        api = 'http://edgaronline.api.mashery.com/v2/corefinancials/qtr?' \
+              'primarysymbols={0}&fiscalperiod={1}q{2}~{3}q{4}&appkey={5}&' \
+              'fields=fiscalperiod,BalanceSheetConsolidated,IncomeStatementConsolidated,CashFlowStatementConsolidated'\
+            .format(symbol, start_year, start_quarter, end_year, end_quarter, self.key)
         headers = {
             "Accept": "application/json, text/javascript, */*; q=0.01"
         }
         return api, "GET", headers, {}
 
     def parse_ret(self, symbol, content):
-        pass
+        t = json.loads(content.decode("utf-8"))
+        ret = []
+        for row in t["result"]["rows"]:
+            for kv in row["values"]:
+                if kv["field"] == "fiscalperiod":
+                    fiscalperiod = kv["value"]
+                    report = base.RawFiscalReport(symbol, fiscalperiod, content.decode("utf-8"))
+                    ret.append(report)
+        return ret
 
 
 class EdgarYearReportAPI(YearReportAPI, EdgarAPI):
     def get_url_params(self, symbol, start_year, end_year):
-        api = 'http://edgaronline.api.mashery.com/v2/corefinancials/ann?primarysymbols={0}&fiscalperiod={1}q{2}~{3}q{4}'\
-              '&appkey={5}'.format(symbol, start_year, 1, end_year, 4, self.key)
+        api = 'http://edgaronline.api.mashery.com/v2/corefinancials/ann?' \
+              'primarysymbols={0}&fiscalperiod={1}q{2}~{3}q{4}&appkey={5}&' \
+              'fields=fiscalperiod,BalanceSheetConsolidated,IncomeStatementConsolidated,CashFlowStatementConsolidated'\
+            .format(symbol, start_year, 1, end_year, 4, self.key)
         headers = {
             "Accept": "application/json, text/javascript, */*; q=0.01"
         }
         return api, "GET", headers, {}
 
     def parse_ret(self, symbol, content):
-        pass
+        t = json.loads(content.decode("utf-8"))
+        ret = []
+        for row in t["result"]["rows"]:
+            for kv in row["values"]:
+                if kv["field"] == "fiscalperiod":
+                    fiscalperiod = kv["value"]
+                    report = base.RawFiscalReport(symbol, fiscalperiod, content.decode("utf-8"))
+                    ret.append(report)
+        return ret
 
 
 class EdgarInsiderIssuesAPI(InsiderIssuesAPI, EdgarAPI):

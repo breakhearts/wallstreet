@@ -141,6 +141,16 @@ class BaseIndex(object):
         )
 
 
+class RawFiscalReport(object):
+    YEAR = 1
+    QUARTER = 2
+
+    def __init__(self, symbol, fiscal_period, content):
+        self.symbol = symbol
+        self.fiscal_period = fiscal_period
+        self.content = content
+
+
 def get_day_str(date):
     return date.strftime("%Y%m%d")
 
