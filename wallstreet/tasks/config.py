@@ -130,6 +130,10 @@ CELERY_ROUTES = {
         'queue': 'storage_tasks',
         'routing_key': 'storage_tasks.save_stock_year_fiscal'
     },
+    'wallstreet.tasks.storage_tasks.load_symbols_has_no_year_fiscal_report': {
+        'queue': 'storage_tasks',
+        'routing_key': 'storage_tasks.load_symbols_has_no_year_fiscal_report'
+    }
 }
 
 CELERY_ANNOTATIONS = {
