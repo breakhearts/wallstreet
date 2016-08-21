@@ -6,7 +6,7 @@ from wallstreet.tasks.celery import app
 from wallstreet import base
 from wallstreet.tasks.storage_tasks import save_stock_day, load_all_stock_info, save_stock_info
 from wallstreet.tasks.storage_tasks import load_last_update_date, save_stock_year_fiscal
-from wallstreet.tasks.storage_tasks import compute_base_index, clear_stock
+from wallstreet.tasks.storage_tasks import compute_base_index, clear_stock, load_symbols_has_no_year_fiscal_report
 from celery.utils.log import get_task_logger
 from wallstreet.storage import LastUpdateStorage
 from wallstreet.tasks.task_monitor import task_counter
@@ -159,13 +159,13 @@ def update_stock_base_index(last_update_date, symbol):
 
 @app.task
 def update_all_year_fiscal_report():
-    load_all_stock_info.apply_async(link=get_all_stock_year_fiscal.s())
+    load_symbols_has_no_year_fiscal_report.apply_async(link=get_all_stock_year_fiscal.s())
 
 
 @app.task
-def get_all_stock_year_fiscal(stocks):
-    stocks = [base.StockInfo.from_serializable_obj(x) for x in stocks]
-    symbols = [x.symbol for x in stocks]
+def get_all_stock_year_fiscal(symbols):
+    #stocks = [base.StockInfo.from_serializable_obj(x) for x in stocks]
+    #symbols = [x.symbol for x in stocks]
     logger.debug("len = {0}".format(len(symbols)))
     batch_size = 5
     t = []

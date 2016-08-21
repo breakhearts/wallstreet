@@ -93,7 +93,6 @@ def compute_base_index(symbol, limit, last_update_date, end_date):
         t = stock_days[index:index + 60]
         base_index.update(t)
         base_indexs.append(base_index.serializable_obj())
-    #save_stock_base_index.apply_async((base_indexs,))
     logger.debug("ok, symbol = {0}, last_update_date = {1}, limit = {2}".format(symbol, last_update_date, limit))
     save_stock_base_index(base_indexs)
 
@@ -139,3 +138,17 @@ def save_stock_year_fiscal(reports):
             logger.error(traceback.format_exc())
             raise
         logger.debug("ok,{0}".format(counter))
+
+
+@app.task
+def load_symbols_has_no_year_fiscal_report():
+    fiscal_storage = RawYearFiscalReportSqlStorage(engine, Session)
+    symbols = fiscal_storage.load_symbols()
+    symbols = set(symbols)
+    stock_info_storage = StockInfoSqlStorage(engine, Session)
+    stock_infos = stock_info_storage.load_all()
+    ret = []
+    for stock_info in stock_infos:
+        if stock_info.symbol not in symbols:
+            ret.append(stock_info.symbol)
+    return ret

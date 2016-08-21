@@ -398,6 +398,8 @@ class RawYearFiscalReportStorage(object):
     def load(self, symbol, start_period=None, end_period=None):
         raise NotImplementedError
 
+    def load_symbols(self):
+        raise NotImplementedError
 
 class RawYearFiscalReportSqlStorage(RawYearFiscalReportStorage, SqlStorage):
     def save(self, reports):
@@ -433,6 +435,17 @@ class RawYearFiscalReportSqlStorage(RawYearFiscalReportStorage, SqlStorage):
             session.close()
         return ret
 
+    def load_symbols(self):
+        session = self.Session()
+        try:
+            records = session.query(RawYearFiscalReport.symbol).group_by(RawYearFiscalReport.symbol).all()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+        return [x[0] for x in records]
+
 
 class RawQuarterFiscalReport(Base):
     __tablename__ = "raw_quarter_fiscal_report"
@@ -448,6 +461,9 @@ class RawQuarterFiscalReportStorage(object):
         raise NotImplementedError
 
     def load(self, symbol, start_period=None, end_period=None):
+        raise NotImplementedError
+
+    def load_symbols(self):
         raise NotImplementedError
 
 
@@ -480,12 +496,21 @@ class RawQuarterFiscalReportSqlStorage(RawQuarterFiscalReportStorage, SqlStorage
                 ret.append(base.RawFiscalReport(symbol=t.symbol, fiscal_period=t.fiscal_period, content=t.content))
         except:
             session.rollback()
-            import traceback
-            print(traceback.format_exc())
             raise
         finally:
             session.close()
         return ret
+
+    def load_symbols(self):
+        session = self.Session()
+        try:
+            records = session.query(RawQuarterFiscalReport.symbol).group_by(RawQuarterFiscalReport.symbol).all()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+        return [x[0] for x in records]
 
 
 def create_sql_table(engine):

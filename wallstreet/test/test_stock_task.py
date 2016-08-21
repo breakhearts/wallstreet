@@ -3,6 +3,7 @@ import pytest
 from wallstreet import config
 config.set_config("storage", "url", config.get_test("storage", "url"))
 from wallstreet.tasks.stock_tasks import *
+from wallstreet.tasks.storage_tasks import *
 from datetime import datetime, timedelta
 from wallstreet.storage import *
 from wallstreet import base
@@ -75,12 +76,13 @@ def test_update_all_stock_info():
 
 
 def test_update_year_fiscal():
-    t = []
-    t.append(base.StockInfo("BIDU", "nasdaq").serializable_obj())
-    t.append(base.StockInfo("AAPL", "nasdaq").serializable_obj())
-    get_all_stock_year_fiscal(t)
+    get_all_stock_year_fiscal(["BIDU", "AAPL"])
     storage = RawYearFiscalReportSqlStorage(engine, Session)
     t = storage.load("AAPL")
     assert len(t) > 0
     t = storage.load("BIDU")
     assert len(t) > 0
+    t = load_symbols_has_no_year_fiscal_report()
+    assert len(t) > 0
+    assert "AAPL" not in set(t) and "BIDU" not in set(t)
+
