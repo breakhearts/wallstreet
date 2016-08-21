@@ -166,6 +166,7 @@ class RawFiscalReport(object):
         )
 
 
+
 def get_day_str(date):
     return date.strftime("%Y%m%d")
 
