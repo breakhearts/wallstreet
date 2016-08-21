@@ -133,8 +133,12 @@ class TestRawQuarterFiscalReportSqlStorage:
         reports.append(base.RawFiscalReport(symbol="BIDU", fiscal_period=201403, content="XXXXX"))
         reports.append(base.RawFiscalReport(symbol="BIDU", fiscal_period=201503, content="XXXXX"))
         reports.append(base.RawFiscalReport(symbol="BIDU", fiscal_period=201504, content="XXXXX"))
+        reports.append(base.RawFiscalReport(symbol="BABA", fiscal_period=201504, content="XXXXX"))
         storage.save(reports)
         reports = storage.load("BIDU")
         assert len(reports) == 5
         reports = storage.load("BIDU", start_period=201402, end_period=201503)
         assert len(reports) == 3
+        reports = storage.load_symbols()
+        assert len(reports) == 2
+        assert "BABA" in set(reports) and "BIDU" in set(reports)
