@@ -167,7 +167,7 @@ def update_all_year_fiscal_report():
 def get_all_stock_year_fiscal(stocks):
     stocks = [base.StockInfo.from_serializable_obj(x) for x in stocks]
     symbols = [x.symbol for x in stocks]
-    logger("len = {0}".format(len(symbols)))
+    logger.debug("len = {0}".format(len(symbols)))
     batch_size = 10
     t = []
     for index, symbol in enumerate(symbols):
