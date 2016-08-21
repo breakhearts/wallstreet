@@ -167,11 +167,12 @@ def update_all_year_fiscal_report():
 def get_all_stock_year_fiscal(stocks):
     stocks = [base.StockInfo.from_serializable_obj(x) for x in stocks]
     symbols = [x.symbol for x in stocks]
+    logger("len = {0}".format(len(symbols)))
     batch_size = 10
     t = []
     for index, symbol in enumerate(symbols):
         t.append(symbol)
-        if index != 0 and index % batch_size == 0:
+        if len(t) % batch_size == 0:
             get_stock_year_fiscal.apply_async((t,), link=save_stock_year_fiscal.s())
             t.clear()
     if len(t) > 0:
