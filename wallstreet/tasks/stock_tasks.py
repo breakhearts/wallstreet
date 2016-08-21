@@ -168,7 +168,7 @@ def get_all_stock_year_fiscal(stocks):
     stocks = [base.StockInfo.from_serializable_obj(x) for x in stocks]
     symbols = [x.symbol for x in stocks]
     logger.debug("len = {0}".format(len(symbols)))
-    batch_size = 10
+    batch_size = 5
     t = []
     for index, symbol in enumerate(symbols):
         t.append(symbol)
@@ -191,7 +191,7 @@ def get_stock_year_fiscal(self, symbols, timeout=30):
         if status_code == 404:
             raise Ignore()
         else:
-            raise self.retry()
+            raise self.retry(timeout=60)
     ret = api.parse_ret(content)
     logger.debug("ok, symbols={0}".format(symbols))
     return [x.serializable_obj() for x in ret]
