@@ -30,11 +30,11 @@ CELERY_LOGGING = {
         }
     },
     'loggers': {
-        'wallstreet.tasks.stock_history_tasks': {
+        'wallstreet.tasks.stock_tasks': {
             'handlers': ['socket'],
             'level': 'DEBUG'
         },
-        'wallstreet.tasks.stock_storage_tasks': {
+        'wallstreet.tasks.storage_tasks': {
             'handlers': ['socket'],
             'level': 'DEBUG'
         },
@@ -59,30 +59,30 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'level': 'DEBUG'
         },
-        'stock_history_tasks': {
+        'stock_tasks': {
             'formatter': 'normal',
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'level': "DEBUG",
-            'filename': os.path.join(LOG_ROOT, "stock_history_tasks.log"),
+            'filename': os.path.join(LOG_ROOT, "stock_tasks.log"),
             'when': "D",
             'interval': 1
         },
-        'stock_storage_tasks': {
+        'storage_tasks': {
             'formatter': 'normal',
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'level': "DEBUG",
-            'filename': os.path.join(LOG_ROOT, "stock_storage_tasks.log"),
+            'filename': os.path.join(LOG_ROOT, "storage_tasks.log"),
             'when': "D",
             'interval': 1
         }
     },
     'loggers': {
-        'wallstreet.tasks.stock_history_tasks': {
-            'handlers': ['console', 'stock_history_tasks'],
+        'wallstreet.tasks.stock_tasks': {
+            'handlers': ['console', 'stock_tasks'],
             'level': 'DEBUG'
         },
-        'wallstreet.tasks.stock_storage_tasks': {
-            'handlers': ['console', 'stock_storage_tasks'],
+        'wallstreet.tasks.storage_tasks': {
+            'handlers': ['console', 'storage_tasks'],
             'level': 'DEBUG'
         }
     }
