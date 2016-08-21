@@ -174,7 +174,7 @@ def get_all_stock_year_fiscal(stocks):
         t.append(symbol)
         if len(t) % batch_size == 0:
             get_stock_year_fiscal.apply_async((t,), link=save_stock_year_fiscal.s())
-            t.clear()
+            t = []
     if len(t) > 0:
         get_stock_year_fiscal.apply_async((t,), link=save_stock_year_fiscal.s())
 
