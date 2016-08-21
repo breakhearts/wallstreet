@@ -36,7 +36,7 @@ class NasdaqStockInfoAPI(StockInfoAPI):
             t = [x.strip('"') for x in line.split('",')]
             symbol, name, last_sale, market_cap, adr_tso, ipo_year, sector, industry, summary_quote = t[:9]
             symbol = symbol.strip()
-            if symbol not in symbols and symbol.find("^") == -1:
+            if symbol not in symbols and symbol.isalpha():
                 data.append(StockInfo(symbol, exchange))
                 symbols[symbol] = True
         return data
@@ -173,11 +173,16 @@ class EdgarYearReportAPI(YearReportAPI, EdgarAPI):
         t = json.loads(content.decode("utf-8"))
         ret = []
         values = {}
+        symbol_period = {}
         for row in t["result"]["rows"]:
             for kv in row["values"]:
                 values[kv["field"]] = kv["value"]
-            report = base.RawFiscalReport(values["primarysymbol"], values["fiscalperiod"], json.dumps(values))
-            ret.append(report)
+            symbol, period = values["primarysymbol"], values["fiscalperiod"]
+            k = "{0}_{1}".format(symbol, period)
+            if k not in symbol_period:
+                symbol_period[k] = True
+                report = base.RawFiscalReport(symbol, period, json.dumps(values))
+                ret.append(report)
         return ret
 
 

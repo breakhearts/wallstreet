@@ -33,6 +33,7 @@ def save_stock_day(stock_days):
             last_update_storage.save(stock_days[0].symbol, last_update_date, LastUpdateStorage.STOCK_DAY)
         except Exception as exc:
             logger.error(traceback.format_exc())
+            raise
         logger.debug("ok, symbol = {0}".format(stock_days[0].symbol))
 
 
@@ -53,6 +54,7 @@ def save_stock_info(stock_infos):
             stock_info_storage.save(stock_infos)
         except Exception as exc:
             logger.debug(traceback.format_exc())
+            raise
         logger.debug("ok, exchange = {0}".format(stock_infos[0].exchange))
 
 
@@ -110,6 +112,7 @@ def save_stock_base_index(stock_base_indexs):
             last_update_storage.save(stock_base_indexs[0].symbol, last_update_date, LastUpdateStorage.STOCK_BASE_INDEX)
         except Exception as exc:
             logger.error(traceback.format_exc())
+            raise
         logger.debug("ok, symbol = {0}".format(stock_base_indexs[0].symbol))
 
 
@@ -134,4 +137,5 @@ def save_stock_year_fiscal(reports):
             storage.save(reports)
         except Exception as exc:
             logger.error(traceback.format_exc())
+            raise
         logger.debug("ok,{0}".format(counter))
