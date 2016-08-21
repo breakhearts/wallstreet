@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from wallstreet.crawel import stockapi
 from wallstreet.crawel.fetcher import RequestsFetcher
 from datetime import datetime
+from wallstreet import config
 
 
 class TestYahooStockHistoryAPI:
@@ -34,3 +35,21 @@ class TestNasdaqStockInfoAPI:
         status_code, content = fetcher.fetch(url, method, headers, data)
         stock_infos = api.parse_ret("NASDAQ", content)
         assert len(stock_infos) > 100
+
+
+class TestEdgarAPI:
+    def test_year_fiscal_report(self):
+        api = stockapi.EdgarYearReportAPI(config.get_test("edgar", "core_key"))
+        url, method, headers, data = api.get_url_params(["BIDU", "AAPL"], start_year=2011, end_year=2012)
+        fetcher = RequestsFetcher(timeout=30)
+        status_code, content = fetcher.fetch(url, method, headers, data)
+        raw_report = api.parse_ret(content)
+        assert len(raw_report) == 4
+
+    def test_quarter_fiscal_report(self):
+        api = stockapi.EdgarQuarterReportAPI(config.get_test("edgar", "core_key"))
+        url, method, headers, data = api.get_url_params("FB", start_year=2014, end_year=2015, start_quarter=3, end_quarter=1)
+        fetcher = RequestsFetcher(timeout=30)
+        status_code, content = fetcher.fetch(url, method, headers, data)
+        raw_report = api.parse_ret(content)
+        assert len(raw_report) == 3

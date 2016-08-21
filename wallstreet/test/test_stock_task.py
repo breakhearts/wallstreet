@@ -2,7 +2,7 @@ from __future__ import absolute_import
 import pytest
 from wallstreet import config
 config.set_config("storage", "url", config.get_test("storage", "url"))
-from wallstreet.tasks.stock_history_tasks import *
+from wallstreet.tasks.stock_tasks import *
 from datetime import datetime, timedelta
 from wallstreet.storage import *
 from wallstreet import base
@@ -72,3 +72,12 @@ def test_update_all_stock_info():
     storage = StockInfoSqlStorage(engine, Session)
     t = storage.load_all()
     assert len(t) > 1000
+
+
+def test_update_year_fiscal():
+    get_all_stock_year_fiscal(["AAPL", "BIDU"])
+    storage = RawYearFiscalReportSqlStorage(engine, Session)
+    t = storage.load("AAPL")
+    assert len(t) > 0
+    t = storage.load("BIDU")
+    assert len(t) > 0

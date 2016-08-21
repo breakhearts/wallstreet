@@ -1,11 +1,13 @@
 from __future__ import absolute_import
-from wallstreet.storage import StockDaySqlStorage, StockInfoSqlStorage, LastUpdateSqlStorage, BaseIndexSqlStorage, LastUpdateStorage
+from wallstreet.storage import StockDaySqlStorage, StockInfoSqlStorage, LastUpdateSqlStorage, BaseIndexSqlStorage
+from wallstreet.storage import LastUpdateStorage, RawYearFiscalReportSqlStorage
 from wallstreet.tasks.celery import app, engine, Session
 from celery.utils.log import get_task_logger
-from wallstreet.base import StockDay, StockInfo, BaseIndex
+from wallstreet.base import StockDay, StockInfo, BaseIndex, RawFiscalReport
 import traceback
 from wallstreet import base
 from dateutil.parser import parse
+from collections import defaultdict
 
 logger = get_task_logger(__name__)
 
@@ -30,7 +32,6 @@ def save_stock_day(stock_days):
             last_update_storage = LastUpdateSqlStorage(engine, Session)
             last_update_storage.save(stock_days[0].symbol, last_update_date, LastUpdateStorage.STOCK_DAY)
         except Exception as exc:
-            print(traceback.format_exc())
             logger.error(traceback.format_exc())
         logger.debug("ok, symbol = {0}".format(stock_days[0].symbol))
 
@@ -119,3 +120,18 @@ def clear_stock(symbol):
     storage = BaseIndexSqlStorage(engine, Session)
     storage.delete(symbol)
     logger.debug("ok, symbol ={0}".find(symbol))
+
+
+@app.task
+def save_stock_year_fiscal(reports):
+    reports = [RawFiscalReport.from_serializable_obj(x) for x in reports]
+    if len(reports) > 0:
+        counter = defaultdict(int)
+        for report in reports:
+            counter[report.symbol] += 1
+        try:
+            storage = RawYearFiscalReportSqlStorage(engine, Session)
+            storage.save(reports)
+        except Exception as exc:
+            logger.error(traceback.format_exc())
+        logger.debug("ok,{0}".format(counter))

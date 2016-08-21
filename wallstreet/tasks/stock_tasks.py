@@ -1,12 +1,12 @@
 from __future__ import absolute_import
 from celery import Task
 from wallstreet.crawel.fetcher import RequestsFetcher
-from wallstreet.crawel.stockapi import YahooHistoryDataAPI, NasdaqStockInfoAPI
+from wallstreet.crawel.stockapi import YahooHistoryDataAPI, NasdaqStockInfoAPI, EdgarYearReportAPI
 from wallstreet.tasks.celery import app
 from wallstreet import base
-from wallstreet.tasks.stock_storage_tasks import save_stock_day, load_all_stock_info, save_stock_info
-from wallstreet.tasks.stock_storage_tasks import load_last_update_date, load_last_stock_days, save_stock_base_index
-from wallstreet.tasks.stock_storage_tasks import compute_base_index, clear_stock
+from wallstreet.tasks.storage_tasks import save_stock_day, load_all_stock_info, save_stock_info
+from wallstreet.tasks.storage_tasks import load_last_update_date, save_stock_year_fiscal
+from wallstreet.tasks.storage_tasks import compute_base_index, clear_stock
 from celery.utils.log import get_task_logger
 from wallstreet.storage import LastUpdateStorage
 from wallstreet.tasks.task_monitor import task_counter
@@ -72,14 +72,7 @@ def update_stock_history(last_update_date, symbol):
         get_stock_history.apply_async((symbol, None, None, None, False, None), link=save_stock_day.s())
 
 
-class StockHistoryTasks(Task):
-    abstract = True
-
-    def on_failure(self, exc, task_id, args, kwargs, einfo):
-        pass
-
-
-@app.task(base=StockHistoryTasks, bind=True, max_retries=3, default_retry_delay=30)
+@app.task(bind=True, max_retries=3, default_retry_delay=30)
 def get_stock_history(self, symbol, start_date=None, end_date=None, check_dividend=False, last_no_dividend=None,
                       timeout=config.get("fetcher", "timeout")):
     api = YahooHistoryDataAPI()
@@ -163,3 +156,37 @@ def update_stock_base_index(last_update_date, symbol):
     compute_base_index.apply_async((symbol, fetch_days, last_update_date.strftime("%Y-%m-%d"),
                                     last_after_hour_date.strftime("%Y-%m-%d")))
     logger.debug("ok")
+
+
+@app.task
+def update_all_year_fiscal_report():
+    load_all_stock_info.apply_async(link=get_all_stock_year_fiscal.s())
+
+
+@app.task
+def get_all_stock_year_fiscal(symbols):
+    batch_size = 10
+    t = []
+    for index, symbol in enumerate(symbols):
+        t.append(symbol)
+        if index != 0 and index % batch_size == 0:
+            get_stock_year_fiscal.apply_async((t,), link=save_stock_year_fiscal.s())
+            t.clear()
+    if len(t) > 0:
+        get_stock_year_fiscal.apply_async((t,), link=save_stock_year_fiscal.s())
+
+
+@app.task(bind=True, max_retries=3, default_retry_delay=30)
+def get_stock_year_fiscal(self, symbols, timeout=30):
+    api = EdgarYearReportAPI(config.get("edgar", "core_key"))
+    url, method, headers, data = api.get_url_params(symbols=symbols, start_year=1970, end_year=9999)
+    fetcher = RequestsFetcher(timeout=timeout)
+    status_code, content = fetcher.fetch(url, method, headers, data)
+    if status_code != 200:
+        logger.debug("status_code={0}".format(status_code))
+        if status_code == 404:
+            raise Ignore()
+        else:
+            raise self.retry()
+    ret = api.parse_ret(content)
+    return [x.serializable_obj() for x in ret]

@@ -31,5 +31,8 @@
       "receivers": [
         "xxx@163.com"
       ]
-    }
+    },
+  "edgar":{
+    "core_key" : "XXXXX"
+  }
 }

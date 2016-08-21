@@ -3,7 +3,7 @@ storage
 """
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Float, DateTime, Index
+from sqlalchemy import Column, Integer, String, Float, Text, DateTime, Index
 from sqlalchemy.orm import sessionmaker
 from wallstreet import base
 
@@ -380,6 +380,112 @@ class BaseIndexSqlStorage(BaseIndexStorage, SqlStorage):
             raise
         finally:
             session.close()
+
+
+class RawYearFiscalReport(Base):
+    __tablename__ = "raw_year_fiscal_report"
+    id = Column(Integer, primary_key=True)
+    symbol = Column(String(32))
+    fiscal_period = Column(String(6))
+    content = Column(Text)
+    __table_args__ = (Index("symbol_period_index", "symbol", "fiscal_period", unique=True),)
+
+
+class RawYearFiscalReportStorage(object):
+    def save(self, reports):
+        raise NotImplementedError
+
+    def load(self, symbol, start_period=None, end_period=None):
+        raise NotImplementedError
+
+
+class RawYearFiscalReportSqlStorage(RawYearFiscalReportStorage, SqlStorage):
+    def save(self, reports):
+        if not isinstance(reports, list):
+            reports = [reports]
+        session = self.Session()
+        try:
+            for report in reports:
+                session.add(RawYearFiscalReport(symbol=report.symbol, fiscal_period=report.fiscal_period,
+                                                content=report.content))
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    def load(self, symbol, start_period=None, end_period=None):
+        session = self.Session()
+        try:
+            records = session.query(RawYearFiscalReport).filter(RawYearFiscalReport.symbol == symbol)
+            if start_period is not None:
+                records = records.filter(RawYearFiscalReport.fiscal_period >=start_period)
+            if end_period is not None:
+                records = records.filter(RawYearFiscalReport.fiscal_period <= end_period)
+            ret = []
+            for t in records:
+                ret.append(base.RawFiscalReport(symbol=t.symbol, fiscal_period=t.fiscal_period, content=t.content))
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+        return ret
+
+
+class RawQuarterFiscalReport(Base):
+    __tablename__ = "raw_quarter_fiscal_report"
+    id = Column(Integer, primary_key=True)
+    symbol = Column(String(32))
+    fiscal_period = Column(String(6))
+    content = Column(Text)
+    __table_args__ = (Index("symbol_period_index", "symbol", "fiscal_period", unique=True),)
+
+
+class RawQuarterFiscalReportStorage(object):
+    def save(self, reports):
+        raise NotImplementedError
+
+    def load(self, symbol, start_period=None, end_period=None):
+        raise NotImplementedError
+
+
+class RawQuarterFiscalReportSqlStorage(RawQuarterFiscalReportStorage, SqlStorage):
+    def save(self, reports):
+        if not isinstance(reports, list):
+            reports = [reports]
+        session = self.Session()
+        try:
+            for report in reports:
+                session.add(RawQuarterFiscalReport(symbol=report.symbol, fiscal_period=report.fiscal_period,
+                                                content=report.content))
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    def load(self, symbol, start_period=None, end_period=None):
+        session = self.Session()
+        try:
+            records = session.query(RawQuarterFiscalReport).filter(RawQuarterFiscalReport.symbol == symbol)
+            if start_period is not None:
+                records = records.filter(RawQuarterFiscalReport.fiscal_period >=start_period)
+            if end_period is not None:
+                records = records.filter(RawQuarterFiscalReport.fiscal_period <= end_period)
+            ret = []
+            for t in records:
+                ret.append(base.RawFiscalReport(symbol=t.symbol, fiscal_period=t.fiscal_period, content=t.content))
+        except:
+            session.rollback()
+            import traceback
+            print(traceback.format_exc())
+            raise
+        finally:
+            session.close()
+        return ret
 
 
 def create_sql_table(engine):

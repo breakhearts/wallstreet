@@ -87,10 +87,10 @@ class QuarterReportAPI(object):
     """
     get quarter financial report, note not all company submit this report
     """
-    def get_url_params(self, symbol, start_year, start_quarter, end_year, end_quarter):
+    def get_url_params(self, symbols, start_year, start_quarter, end_year, end_quarter):
         raise NotImplementedError
 
-    def parse_ret(self, symbol, content):
+    def parse_ret(self, content):
         raise NotImplementedError
 
 
@@ -98,10 +98,10 @@ class YearReportAPI(object):
     """
     get year financial report, all company submit this report
     """
-    def get_url_params(self, symbol, start_year, end_year):
+    def get_url_params(self, symbols, start_year, end_year):
         raise NotImplementedError
 
-    def parse_ret(self, symbol, content):
+    def parse_ret(self, content):
         raise NotImplementedError
 
 
@@ -130,29 +130,55 @@ class EdgarAPI(object):
 
 
 class EdgarQuarterReportAPI(QuarterReportAPI, EdgarAPI):
-    def get_url_params(self, symbol, start_year, start_quarter, end_year, end_quarter):
-        api = 'http://edgaronline.api.mashery.com/v2/corefinancials/qtr?primarysymbols={0}&fiscalperiod={1}q{2}~{3}q{4}'\
-              '&appkey={5}'.format(symbol, start_year, start_quarter, end_year, end_quarter, self.key)
+    def get_url_params(self, symbols, start_year, start_quarter, end_year, end_quarter):
+        if isinstance(symbols, str):
+            symbols = [symbols]
+        symbol = ",".join(symbols)
+        api = 'http://edgaronline.api.mashery.com/v2/corefinancials/qtr?' \
+              'primarysymbols={0}&fiscalperiod={1}q{2}~{3}q{4}&appkey={5}&' \
+              'fields=primarysymbol,fiscalperiod,BalanceSheetConsolidated,IncomeStatementConsolidated,CashFlowStatementConsolidated'\
+            .format(symbol, start_year, start_quarter, end_year, end_quarter, self.key)
         headers = {
             "Accept": "application/json, text/javascript, */*; q=0.01"
         }
         return api, "GET", headers, {}
 
-    def parse_ret(self, symbol, content):
-        pass
+    def parse_ret(self, content):
+        t = json.loads(content.decode("utf-8"))
+        ret = []
+        values = {}
+        for row in t["result"]["rows"]:
+            for kv in row["values"]:
+                values[kv["field"]] = kv["value"]
+            report = base.RawFiscalReport(values["primarysymbol"], values["fiscalperiod"], json.dumps(values))
+            ret.append(report)
+        return ret
 
 
 class EdgarYearReportAPI(YearReportAPI, EdgarAPI):
-    def get_url_params(self, symbol, start_year, end_year):
-        api = 'http://edgaronline.api.mashery.com/v2/corefinancials/ann?primarysymbols={0}&fiscalperiod={1}q{2}~{3}q{4}'\
-              '&appkey={5}'.format(symbol, start_year, 1, end_year, 4, self.key)
+    def get_url_params(self, symbols, start_year, end_year):
+        if isinstance(symbols, str):
+            symbols = [symbols]
+        symbol = ",".join(symbols)
+        api = 'http://edgaronline.api.mashery.com/v2/corefinancials/ann?' \
+              'primarysymbols={0}&fiscalperiod={1}q{2}~{3}q{4}&appkey={5}&' \
+              'fields=primarysymbol,fiscalperiod,BalanceSheetConsolidated,IncomeStatementConsolidated,CashFlowStatementConsolidated'\
+            .format(symbol, start_year, 1, end_year, 4, self.key)
         headers = {
             "Accept": "application/json, text/javascript, */*; q=0.01"
         }
         return api, "GET", headers, {}
 
-    def parse_ret(self, symbol, content):
-        pass
+    def parse_ret(self, content):
+        t = json.loads(content.decode("utf-8"))
+        ret = []
+        values = {}
+        for row in t["result"]["rows"]:
+            for kv in row["values"]:
+                values[kv["field"]] = kv["value"]
+            report = base.RawFiscalReport(values["primarysymbol"], values["fiscalperiod"], json.dumps(values))
+            ret.append(report)
+        return ret
 
 
 class EdgarInsiderIssuesAPI(InsiderIssuesAPI, EdgarAPI):
