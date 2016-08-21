@@ -12,6 +12,6 @@ install:
 before_script:
   - mysql -e 'create database wallstreet_test;'
   - "echo {\"edgar\": {\"core_key\":\"$EDGARCOREKEY\"}} > config_local.json"
-  - cat config_local.json
+  - "cat config_local.json"
 script:
   - py.test
