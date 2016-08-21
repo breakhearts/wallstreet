@@ -178,6 +178,7 @@ def get_all_stock_year_fiscal(symbols):
 
 @app.task(bind=True, max_retries=3, default_retry_delay=30)
 def get_stock_year_fiscal(self, symbols, timeout=30):
+    logger.debug("symbols={0}".format(symbols))
     api = EdgarYearReportAPI(config.get("edgar", "core_key"))
     url, method, headers, data = api.get_url_params(symbols=symbols, start_year=1970, end_year=9999)
     fetcher = RequestsFetcher(timeout=timeout)
@@ -189,4 +190,5 @@ def get_stock_year_fiscal(self, symbols, timeout=30):
         else:
             raise self.retry()
     ret = api.parse_ret(content)
+    logger.debug("ok, symbols={0}".format(symbols))
     return [x.serializable_obj() for x in ret]
