@@ -15,19 +15,19 @@ CELERY_TIMEZONE = 'US/Eastern'
 
 CELERYBEAT_SCHEDULE = {
     'update_all_stock_info': {
-        'task': 'wallstreet.tasks.stock_history_tasks.update_all_stock_info',
+        'task': 'wallstreet.tasks.stock_tasks.update_all_stock_info',
         'schedule': crontab(hour=0, minute=0, day_of_week='1-5')
     },
     'update_all_stock_history': {
-        'task': 'wallstreet.tasks.stock_history_tasks.update_all_stock_day',
+        'task': 'wallstreet.tasks.stock_tasks.update_all_stock_day',
         'schedule': crontab(hour=0, minute=30, day_of_week='1-5')
     },
     'update_all_stock_base_index': {
-        'task': 'wallstreet.tasks.stock_history_tasks.update_all_stock_base_index',
+        'task': 'wallstreet.tasks.stock_tasks.update_all_stock_base_index',
         'schedule': crontab(hour=4, minute=0, day_of_week='1-5')
     },
     'report_task': {
-        'task': 'wallstreet.tasks.stock_history_tasks.report_tasks',
+        'task': 'wallstreet.tasks.stock_tasks.report_tasks',
         'schedule': crontab(hour=6, minute=0, day_of_week='1-5')
     }
 }
@@ -35,85 +35,85 @@ CELERYBEAT_SCHEDULE = {
 CELERY_DEFAULT_QUEUE = 'default'
 CELERY_QUEUES = (
     Queue('default', Exchange('default', routing_key='default')),
-    Queue('stock_history_tasks', Exchange('stock_history_tasks', type='topic'), routing_key='stock_history_tasks.#'),
-    Queue('stock_storage_tasks', Exchange('stock_storage_tasks', type='topic'), routing_key='stock_storage_tasks.#')
+    Queue('stock_tasks', Exchange('stock_tasks', type='topic'), routing_key='stock_tasks.#'),
+    Queue('storage_tasks', Exchange('storage_tasks', type='topic'), routing_key='storage_tasks.#')
 )
 
 CELERY_ROUTES = {
     #history
-    'wallstreet.tasks.stock_history_tasks.update_all_stock_info':{
-        'queue': 'stock_history_tasks',
-        'routing_key': 'stock_history_tasks.update_all_stock_info'
+    'wallstreet.tasks.stock_tasks.update_all_stock_info':{
+        'queue': 'stock_tasks',
+        'routing_key': 'stock_tasks.update_all_stock_info'
     },
-    'wallstreet.tasks.stock_history_tasks.update_stock_info': {
-        'queue': 'stock_history_tasks',
-        'routing_key': 'stock_history_tasks.update_stock_info'
+    'wallstreet.tasks.stock_tasks.update_stock_info': {
+        'queue': 'stock_tasks',
+        'routing_key': 'stock_tasks.update_stock_info'
     },
-    'wallstreet.tasks.stock_history_tasks.update_all_stock_day': {
-        'queue': 'stock_history_tasks',
-        'routing_key': 'stock_history_tasks.update_all_stock_day'
+    'wallstreet.tasks.stock_tasks.update_all_stock_day': {
+        'queue': 'stock_tasks',
+        'routing_key': 'stock_tasks.update_all_stock_day'
     },
-    'wallstreet.tasks.stock_history_tasks.update_stock_history': {
-        'queue': 'stock_history_tasks',
-        'routing_key': 'stock_history_tasks.update_stock_history'
+    'wallstreet.tasks.stock_tasks.update_stock_history': {
+        'queue': 'stock_tasks',
+        'routing_key': 'stock_tasks.update_stock_history'
     },
-    'wallstreet.tasks.stock_history_tasks.get_all_stock_history': {
-        'queue': 'stock_history_tasks',
-        'routing_key': 'stock_history_tasks.get_all_stock_history'
+    'wallstreet.tasks.stock_tasks.get_all_stock_history': {
+        'queue': 'stock_tasks',
+        'routing_key': 'stock_tasks.get_all_stock_history'
     },
-    'wallstreet.tasks.stock_history_tasks.get_stock_history': {
-        'queue': 'stock_history_tasks',
-        'routing_key': 'stock_history_tasks.get_stock_history'
+    'wallstreet.tasks.stock_tasks.get_stock_history': {
+        'queue': 'stock_tasks',
+        'routing_key': 'stock_tasks.get_stock_history'
     },
-    'wallstreet.tasks.stock_history_tasks.report_tasks': {
-        'queue': 'stock_history_tasks',
-        'routing_key': 'stock_history_tasks.report_tasks'
+    'wallstreet.tasks.stock_tasks.report_tasks': {
+        'queue': 'stock_tasks',
+        'routing_key': 'stock_tasks.report_tasks'
     },
-    'wallstreet.tasks.stock_history_tasks.update_all_stock_base_index': {
-        'queue': 'stock_history_tasks',
-        'routing_key': 'stock_history_tasks.update_all_stock_base_index'
+    'wallstreet.tasks.stock_tasks.update_all_stock_base_index': {
+        'queue': 'stock_tasks',
+        'routing_key': 'stock_tasks.update_all_stock_base_index'
     },
-    'wallstreet.tasks.stock_history_tasks.get_all_stock_base_index': {
-        'queue': 'stock_history_tasks',
-        'routing_key': 'stock_history_tasks.get_all_stock_base_index'
+    'wallstreet.tasks.stock_tasks.get_all_stock_base_index': {
+        'queue': 'stock_tasks',
+        'routing_key': 'stock_tasks.get_all_stock_base_index'
     },
-    'wallstreet.tasks.stock_history_tasks.update_stock_base_index': {
-        'queue': 'stock_history_tasks',
-        'routing_key': 'stock_history_tasks.update_stock_base_index'
+    'wallstreet.tasks.stock_tasks.update_stock_base_index': {
+        'queue': 'stock_tasks',
+        'routing_key': 'stock_tasks.update_stock_base_index'
     },
     #storage
-    'wallstreet.tasks.stock_storage_tasks.load_all_stock_info': {
-        'queue': 'stock_storage_tasks',
-        'routing_key': 'stock_storage_tasks.load_all_stock_info'
+    'wallstreet.tasks.storage_tasks.load_all_stock_info': {
+        'queue': 'storage_tasks',
+        'routing_key': 'storage_tasks.load_all_stock_info'
     },
-    'wallstreet.tasks.stock_storage_tasks.load_last_update_date': {
-        'queue': 'stock_storage_tasks',
-        'routing_key': 'stock_storage_tasks.load_last_update_date'
+    'wallstreet.tasks.storage_tasks.load_last_update_date': {
+        'queue': 'storage_tasks',
+        'routing_key': 'storage_tasks.load_last_update_date'
     },
-    'wallstreet.tasks.stock_storage_tasks.save_stock_day': {
-        'queue': 'stock_storage_tasks',
-        'routing_key': 'stock_storage_tasks.save_stock_day'
+    'wallstreet.tasks.storage_tasks.save_stock_day': {
+        'queue': 'storage_tasks',
+        'routing_key': 'storage_tasks.save_stock_day'
     },
-    'wallstreet.tasks.stock_storage_tasks.save_stock_info': {
-        'queue': 'stock_storage_tasks',
-        'routing_key': 'stock_storage_tasks.save_stock_info'
+    'wallstreet.tasks.storage_tasks.save_stock_info': {
+        'queue': 'storage_tasks',
+        'routing_key': 'storage_tasks.save_stock_info'
     },
-    'wallstreet.tasks.stock_storage_tasks.load_last_stock_days': {
-        'queue': 'stock_storage_tasks',
-        'routing_key': 'stock_storage_tasks.load_last_stock_days'
+    'wallstreet.tasks.storage_tasks.load_last_stock_days': {
+        'queue': 'storage_tasks',
+        'routing_key': 'storage_tasks.load_last_stock_days'
     },
-    'wallstreet.tasks.stock_storage_tasks.save_stock_base_index': {
-        'queue': 'stock_storage_tasks',
-        'routing_key': 'stock_storage_tasks.save_stock_base_index'
+    'wallstreet.tasks.storage_tasks.save_stock_base_index': {
+        'queue': 'storage_tasks',
+        'routing_key': 'storage_tasks.save_stock_base_index'
     },
-    'wallstreet.tasks.stock_storage_tasks.compute_base_index': {
-        'queue': 'stock_storage_tasks',
-        'routing_key': 'stock_storage_tasks.compute_base_index'
+    'wallstreet.tasks.storage_tasks.compute_base_index': {
+        'queue': 'storage_tasks',
+        'routing_key': 'storage_tasks.compute_base_index'
     },
-    'wallstreet.tasks.stock_storage_tasks.clear_stock': {
-        'queue': 'stock_storage_tasks',
-        'routing_key': 'stock_storage_tasks.clear_stock'
+    'wallstreet.tasks.storage_tasks.clear_stock': {
+        'queue': 'storage_tasks',
+        'routing_key': 'storage_tasks.clear_stock'
     },
 }
 
-CELERY_ANNOTATIONS = {'wallstreet.tasks.stock_history_tasks.get_stock_history': {'rate_limit': '1/s'}}
+CELERY_ANNOTATIONS = {'wallstreet.tasks.stock_tasks.get_stock_history': {'rate_limit': '1/s'}}

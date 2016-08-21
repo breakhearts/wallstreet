@@ -60,6 +60,8 @@ class StockDayStorage(object):
 class LastUpdateStorage(object):
     STOCK_DAY = 1
     STOCK_BASE_INDEX = 2
+    STOCK_YEAR_FISCAL = 3
+    STOCK_QUARTER_FISCAL = 4
     """
     storage about last update date
     """
