@@ -150,6 +150,21 @@ class RawFiscalReport(object):
         self.fiscal_period = fiscal_period
         self.content = content
 
+    def serializable_obj(self):
+        return {
+            "symbol": self.symbol,
+            "fiscal_period": self.fiscal_period,
+            "content": self.content
+        }
+
+    @staticmethod
+    def from_serializable_obj(obj):
+        return RawFiscalReport(
+            symbol=obj["symbol"],
+            fiscal_period=obj["fiscal_period"],
+            content=obj["content"]
+        )
+
 
 def get_day_str(date):
     return date.strftime("%Y%m%d")

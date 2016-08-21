@@ -60,8 +60,6 @@ class StockDayStorage(object):
 class LastUpdateStorage(object):
     STOCK_DAY = 1
     STOCK_BASE_INDEX = 2
-    STOCK_YEAR_FISCAL = 3
-    STOCK_QUARTER_FISCAL = 4
     """
     storage about last update date
     """
@@ -482,6 +480,8 @@ class RawQuarterFiscalReportSqlStorage(RawQuarterFiscalReportStorage, SqlStorage
                 ret.append(base.RawFiscalReport(symbol=t.symbol, fiscal_period=t.fiscal_period, content=t.content))
         except:
             session.rollback()
+            import traceback
+            print(traceback.format_exc())
             raise
         finally:
             session.close()
