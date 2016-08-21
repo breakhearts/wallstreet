@@ -112,14 +112,13 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
             ret = ret[start_index:]
         logger.debug("ok, symbol={0}, total={1}".format(symbol, len(ret)))
         task_counter.succeeded("HISTORY_TASKS")
-        return [x.serializable_obj() for x in ret]
     except Exception as exc:
         if isinstance(exc, Ignore):
             raise exc
         else:
             logger.error(traceback.format_exc())
             raise self.retry(exc=exc, timeout=config.get("fetcher", "timeout") * min(self.request.retries+1, 5))
-
+    return [x.serializable_obj() for x in ret]
 
 @app.task
 def report_tasks():
@@ -186,12 +185,19 @@ def get_stock_year_fiscal(self, symbols, timeout=30):
     url, method, headers, data = api.get_url_params(symbols=symbols, start_year=1970, end_year=9999)
     fetcher = RequestsFetcher(timeout=timeout)
     status_code, content = fetcher.fetch(url, method, headers, data)
-    if status_code != 200:
-        logger.debug("status_code={0}".format(status_code))
-        if status_code == 404:
-            raise Ignore()
+    try:
+        if status_code != 200:
+            logger.debug("status_code={0}".format(status_code))
+            if status_code == 404:
+                raise Ignore()
+            else:
+                raise self.retry()
+        ret = api.parse_ret(content)
+        logger.debug("ok, symbols={0}".format(symbols))
+    except Exception as exc:
+        if isinstance(exc, Ignore):
+            raise exc
         else:
-            raise self.retry(timeout=60)
-    ret = api.parse_ret(content)
-    logger.debug("ok, symbols={0}".format(symbols))
+            logger.error(traceback.format_exc())
+            raise self.retry(exc=exc, timeout=60)
     return [x.serializable_obj() for x in ret]
