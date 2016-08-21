@@ -183,9 +183,9 @@ def get_stock_year_fiscal(self, symbols, timeout=30):
     logger.debug("symbols={0}".format(symbols))
     api = EdgarYearReportAPI(config.get("edgar", "core_key"))
     url, method, headers, data = api.get_url_params(symbols=symbols, start_year=1970, end_year=9999)
-    fetcher = RequestsFetcher(timeout=timeout)
-    status_code, content = fetcher.fetch(url, method, headers, data)
     try:
+        fetcher = RequestsFetcher(timeout=timeout)
+        status_code, content = fetcher.fetch(url, method, headers, data)
         if status_code != 200:
             logger.debug("status_code={0}".format(status_code))
             if status_code == 404:
