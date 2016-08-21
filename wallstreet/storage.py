@@ -388,6 +388,7 @@ class RawYearFiscalReport(Base):
     symbol = Column(String(32))
     fiscal_period = Column(String(6))
     content = Column(Text)
+    __table_args__ = (Index("symbol_period_index", "symbol", "fiscal_period", unique=True),)
 
 
 class RawYearFiscalReportStorage(object):
@@ -398,12 +399,39 @@ class RawYearFiscalReportStorage(object):
         raise NotImplementedError
 
 
-class RawYearFiscalReportSqlStorage(SqlStorage, RawYearFiscalReportStorage):
+class RawYearFiscalReportSqlStorage(RawYearFiscalReportStorage, SqlStorage):
     def save(self, reports):
-        pass
+        if not isinstance(reports, list):
+            reports = [reports]
+        session = self.Session()
+        try:
+            for report in reports:
+                session.add(RawYearFiscalReport(symbol=report.symbol, fiscal_period=report.fiscal_period,
+                                                content=report.content))
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     def load(self, symbol, start_period=None, end_period=None):
-        pass
+        session = self.Session()
+        try:
+            records = session.query(RawYearFiscalReport).filter(RawYearFiscalReport.symbol == symbol)
+            if start_period is not None:
+                records = records.filter(RawYearFiscalReport.fiscal_period >=start_period)
+            if end_period is not None:
+                records = records.filter(RawYearFiscalReport.fiscal_period <= end_period)
+            ret = []
+            for t in records:
+                ret.append(base.RawFiscalReport(symbol=t.symbol, fiscal_period=t.fiscal_period, content=t.content))
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+        return ret
 
 
 class RawQuarterFiscalReport(Base):
@@ -412,6 +440,7 @@ class RawQuarterFiscalReport(Base):
     symbol = Column(String(32))
     fiscal_period = Column(String(6))
     content = Column(Text)
+    __table_args__ = (Index("symbol_period_index", "symbol", "fiscal_period", unique=True),)
 
 
 class RawQuarterFiscalReportStorage(object):
@@ -422,12 +451,39 @@ class RawQuarterFiscalReportStorage(object):
         raise NotImplementedError
 
 
-class RawQuarterFiscalReportSqlStorage(SqlStorage, RawQuarterFiscalReportStorage):
+class RawQuarterFiscalReportSqlStorage(RawQuarterFiscalReportStorage, SqlStorage):
     def save(self, reports):
-        pass
+        if not isinstance(reports, list):
+            reports = [reports]
+        session = self.Session()
+        try:
+            for report in reports:
+                session.add(RawQuarterFiscalReport(symbol=report.symbol, fiscal_period=report.fiscal_period,
+                                                content=report.content))
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     def load(self, symbol, start_period=None, end_period=None):
-        pass
+        session = self.Session()
+        try:
+            records = session.query(RawQuarterFiscalReport).filter(RawQuarterFiscalReport.symbol == symbol)
+            if start_period is not None:
+                records = records.filter(RawQuarterFiscalReport.fiscal_period >=start_period)
+            if end_period is not None:
+                records = records.filter(RawQuarterFiscalReport.fiscal_period <= end_period)
+            ret = []
+            for t in records:
+                ret.append(base.RawFiscalReport(symbol=t.symbol, fiscal_period=t.fiscal_period, content=t.content))
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+        return ret
 
 
 def create_sql_table(engine):

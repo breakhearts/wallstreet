@@ -104,3 +104,37 @@ class TestBaseIndexSqlStorage:
         storage.delete('BIDU')
         t = storage.load("BIDU")
         assert len(t) == 0
+
+
+class TestRawYearFiscalReportSqlStorage:
+    def test_save_load(self, engine_and_session_cls):
+        engine, session_cls = engine_and_session_cls
+        storage = RawYearFiscalReportSqlStorage(engine, session_cls)
+        reports = []
+        reports.append(base.RawFiscalReport(symbol="BIDU", fiscal_period=201401, content="XXXXX"))
+        reports.append(base.RawFiscalReport(symbol="BIDU", fiscal_period=201402, content="XXXXX"))
+        reports.append(base.RawFiscalReport(symbol="BIDU", fiscal_period=201403, content="XXXXX"))
+        reports.append(base.RawFiscalReport(symbol="BIDU", fiscal_period=201503, content="XXXXX"))
+        reports.append(base.RawFiscalReport(symbol="BIDU", fiscal_period=201504, content="XXXXX"))
+        storage.save(reports)
+        reports = storage.load("BIDU")
+        assert len(reports) == 5
+        reports = storage.load("BIDU", start_period=201402, end_period=201503)
+        assert len(reports) == 3
+
+
+class TestRawQuarterFiscalReportSqlStorage:
+    def test_save_load(self, engine_and_session_cls):
+        engine, session_cls = engine_and_session_cls
+        storage = RawQuarterFiscalReportSqlStorage(engine, session_cls)
+        reports = []
+        reports.append(base.RawFiscalReport(symbol="BIDU", fiscal_period=201401, content="XXXXX"))
+        reports.append(base.RawFiscalReport(symbol="BIDU", fiscal_period=201402, content="XXXXX"))
+        reports.append(base.RawFiscalReport(symbol="BIDU", fiscal_period=201403, content="XXXXX"))
+        reports.append(base.RawFiscalReport(symbol="BIDU", fiscal_period=201503, content="XXXXX"))
+        reports.append(base.RawFiscalReport(symbol="BIDU", fiscal_period=201504, content="XXXXX"))
+        storage.save(reports)
+        reports = storage.load("BIDU")
+        assert len(reports) == 5
+        reports = storage.load("BIDU", start_period=201402, end_period=201503)
+        assert len(reports) == 3
