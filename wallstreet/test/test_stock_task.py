@@ -75,7 +75,10 @@ def test_update_all_stock_info():
 
 
 def test_update_year_fiscal():
-    get_all_stock_year_fiscal(["AAPL", "BIDU"])
+    t = []
+    t.append(base.StockInfo("BIDU", "nasdaq").serializable_obj())
+    t.append(base.StockInfo("AAPL", "nasdaq").serializable_obj())
+    get_all_stock_year_fiscal(t)
     storage = RawYearFiscalReportSqlStorage(engine, Session)
     t = storage.load("AAPL")
     assert len(t) > 0
