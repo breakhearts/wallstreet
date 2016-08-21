@@ -11,6 +11,6 @@ install:
   - "pip install -r requirements.txt"
 before_script:
   - mysql -e 'create database wallstreet_test;'
-  - "echo {\"edgar\": {\"core_key\":\"$edgar_core_key\"}} > config_local.json"
+  - "echo {\\\"edgar\\\": {\\\"core_key\\\":\\\"$EDGARCOREKEY\\\"}} > config_local.json"
 script:
   - py.test
