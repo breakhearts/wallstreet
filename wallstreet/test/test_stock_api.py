@@ -53,3 +53,11 @@ class TestEdgarAPI:
         status_code, content = fetcher.fetch(url, method, headers, data)
         raw_report = api.parse_ret(content)
         assert len(raw_report) == 3
+
+    def test_compnay_report(self):
+        api = stockapi.EdgarCompanyAPI(config.get_test("edgar", "core_key"))
+        url, method, headers, data = api.get_url_params(["BIDU", "BABA"])
+        fetcher = RequestsFetcher(timeout=30)
+        status_code, content = fetcher.fetch(url, method, headers, data)
+        t = api.parse_ret(content)
+        assert len(t) == 2
