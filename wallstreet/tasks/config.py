@@ -36,7 +36,8 @@ CELERY_DEFAULT_QUEUE = 'default'
 CELERY_QUEUES = (
     Queue('default', Exchange('default', routing_key='default')),
     Queue('stock_tasks', Exchange('stock_tasks', type='topic'), routing_key='stock_tasks.#'),
-    Queue('storage_tasks', Exchange('storage_tasks', type='topic'), routing_key='storage_tasks.#')
+    Queue('storage_tasks.read', Exchange('storage_tasks.read', type='topic'), routing_key='storage_tasks.read'),
+    Queue('storage_tasks.write', Exchange('storage_tasks.write', type='topic'), routing_key='storage_tasks.write')
 )
 
 CELERY_ROUTES = {
@@ -93,47 +94,48 @@ CELERY_ROUTES = {
         'queue': 'stock_tasks',
         'routing_key': 'stock_tasks.get_stock_year_fiscal'
     },
-    #storage
+    #storage read
     'wallstreet.tasks.storage_tasks.load_all_stock_info': {
-        'queue': 'storage_tasks',
-        'routing_key': 'storage_tasks.load_all_stock_info'
+        'queue': 'storage_tasks.read',
+        'routing_key': 'storage_tasks.read'
     },
     'wallstreet.tasks.storage_tasks.load_last_update_date': {
-        'queue': 'storage_tasks',
-        'routing_key': 'storage_tasks.load_last_update_date'
-    },
-    'wallstreet.tasks.storage_tasks.save_stock_day': {
-        'queue': 'storage_tasks',
-        'routing_key': 'storage_tasks.save_stock_day'
-    },
-    'wallstreet.tasks.storage_tasks.save_stock_info': {
-        'queue': 'storage_tasks',
-        'routing_key': 'storage_tasks.save_stock_info'
+        'queue': 'storage_tasks.read',
+        'routing_key': 'storage_tasks.read'
     },
     'wallstreet.tasks.storage_tasks.load_last_stock_days': {
-        'queue': 'storage_tasks',
-        'routing_key': 'storage_tasks.load_last_stock_days'
-    },
-    'wallstreet.tasks.storage_tasks.save_stock_base_index': {
-        'queue': 'storage_tasks',
-        'routing_key': 'storage_tasks.save_stock_base_index'
-    },
-    'wallstreet.tasks.storage_tasks.compute_base_index': {
-        'queue': 'storage_tasks',
-        'routing_key': 'storage_tasks.compute_base_index'
-    },
-    'wallstreet.tasks.storage_tasks.clear_stock': {
-        'queue': 'storage_tasks',
-        'routing_key': 'storage_tasks.clear_stock'
-    },
-    'wallstreet.tasks.storage_tasks.save_stock_year_fiscal': {
-        'queue': 'storage_tasks',
-        'routing_key': 'storage_tasks.save_stock_year_fiscal'
+        'queue': 'storage_tasks.read',
+        'routing_key': 'storage_tasks.read'
     },
     'wallstreet.tasks.storage_tasks.load_symbols_has_no_year_fiscal_report': {
-        'queue': 'storage_tasks',
-        'routing_key': 'storage_tasks.load_symbols_has_no_year_fiscal_report'
-    }
+        'queue': 'storage_tasks.read',
+        'routing_key': 'storage_tasks.read'
+    },
+    # storage write
+    'wallstreet.tasks.storage_tasks.save_stock_day': {
+        'queue': 'storage_tasks.write',
+        'routing_key': 'storage_tasks.write'
+    },
+    'wallstreet.tasks.storage_tasks.save_stock_info': {
+        'queue': 'storage_tasks.write',
+        'routing_key': 'storage_tasks.write'
+    },
+    'wallstreet.tasks.storage_tasks.save_stock_base_index': {
+        'queue': 'storage_tasks.write',
+        'routing_key': 'storage_tasks.write'
+    },
+    'wallstreet.tasks.storage_tasks.compute_base_index': {
+        'queue': 'storage_tasks.write',
+        'routing_key': 'storage_tasks.write'
+    },
+    'wallstreet.tasks.storage_tasks.clear_stock': {
+        'queue': 'storage_tasks.write',
+        'routing_key': 'storage_tasks.write'
+    },
+    'wallstreet.tasks.storage_tasks.save_stock_year_fiscal': {
+        'queue': 'storage_tasks.write',
+        'routing_key': 'storage_tasks.write'
+    },
 }
 
 CELERY_ANNOTATIONS = {
