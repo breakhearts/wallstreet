@@ -210,7 +210,7 @@ def update_all_stock_info_details():
 @app.task
 def get_all_stock_info_details(symbols):
     logger.debug("len = {0}".format(len(symbols)))
-    batch_size = 5
+    batch_size = 20
     t = []
     for index, symbol in enumerate(symbols):
         t.append(symbol)
