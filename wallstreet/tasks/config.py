@@ -154,7 +154,7 @@ CELERY_ROUTES = {
     },
     'wallstreet.tasks.storage_tasks.save_stock_info_detail': {
         'queue': 'storage_tasks.write',
-        'routing_key': 'storage_tasks.read'
+        'routing_key': 'storage_tasks.write'
     },
 }
 
