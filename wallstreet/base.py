@@ -165,7 +165,6 @@ class StockInfoDetail(object):
         self.industry = industry
         self.sector = sector
         self.siccode = siccode
-        self.sector = sector
         self.city = city
 
     def serializable_obj(self):
@@ -173,7 +172,7 @@ class StockInfoDetail(object):
 
     @staticmethod
     def from_serializable_obj(obj):
-        return RawFiscalReport(**obj)
+        return StockInfoDetail(**obj)
 
 
 def get_day_str(date):

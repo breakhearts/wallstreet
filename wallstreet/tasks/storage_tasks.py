@@ -1,9 +1,9 @@
 from __future__ import absolute_import
 from wallstreet.storage import StockDaySqlStorage, StockInfoSqlStorage, LastUpdateSqlStorage, BaseIndexSqlStorage
-from wallstreet.storage import LastUpdateStorage, RawYearFiscalReportSqlStorage
+from wallstreet.storage import LastUpdateStorage, RawYearFiscalReportSqlStorage, StockInfoDetailSqlStorage
 from wallstreet.tasks.celery import app, engine, Session
 from celery.utils.log import get_task_logger
-from wallstreet.base import StockDay, StockInfo, BaseIndex, RawFiscalReport
+from wallstreet.base import StockDay, StockInfo, BaseIndex, RawFiscalReport, StockInfoDetail
 import traceback
 from wallstreet import base
 from dateutil.parser import parse
@@ -152,3 +152,30 @@ def load_symbols_has_no_year_fiscal_report():
         if stock_info.symbol not in symbols:
             ret.append(stock_info.symbol)
     return ret
+
+
+@app.task
+def load_symbols_has_no_stock_info_details():
+    detail_storage = StockInfoDetailSqlStorage(engine, Session)
+    details = detail_storage.load_all()
+    symbols = set([x.symbol for x in details])
+    stock_info_storage = StockInfoSqlStorage(engine, Session)
+    stock_infos = stock_info_storage.load_all()
+    ret = []
+    for stock_info in stock_infos:
+        if stock_info.symbol not in symbols:
+            ret.append(stock_info.symbol)
+    return ret
+
+
+@app.task
+def save_stock_info_detail(details):
+    details = [StockInfoDetail.from_serializable_obj(x) for x in details]
+    if len(details) > 0:
+        try:
+            storage = StockInfoDetailSqlStorage(engine, Session)
+            storage.save(details)
+        except Exception as exc:
+            logger.error(traceback.format_exc())
+            raise
+        logger.debug("ok")

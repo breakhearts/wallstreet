@@ -142,3 +142,15 @@ class TestRawQuarterFiscalReportSqlStorage:
         reports = storage.load_symbols()
         assert len(reports) == 2
         assert "BABA" in set(reports) and "BIDU" in set(reports)
+
+
+class TestStockInfoDetailSqlStorage:
+    def test_save_load(self, engine_and_session_cls):
+        engine, session_cls = engine_and_session_cls
+        storage = StockInfoDetailSqlStorage(engine, session_cls)
+        storage.save(base.StockInfoDetail("BIDU", "NASDAQ", "XX", "sector", "siccode", "city"))
+        storage.save(base.StockInfoDetail("BABA", "NASDAQ", "XX", "sector", "siccode", "city"))
+        t = storage.load_all()
+        assert len(t) == 2
+        t = storage.load("BIDU")
+        assert t.symbol == "BIDU"
