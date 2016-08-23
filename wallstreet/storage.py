@@ -554,14 +554,17 @@ class StockInfoDetailSqlStorage(StockInfoDetailStorage, SqlStorage):
     def load_all(self):
         session = self.Session()
         try:
-            t = session.query(StockInfoDetail).all()
+            ret = []
+            for t in session.query(StockInfoDetail):
+                ret.append(StockInfoDetail(symbol=t.symbol, exchange=t.exchange, industry=t.industry,
+                                                 sector=t.sector, siccode=t.siccode, city=t.city))
             session.commit()
         except:
             session.rollback()
             raise
         finally:
             session.close()
-        return t
+        return ret
 
     def load(self, symbol):
         session = self.Session()
