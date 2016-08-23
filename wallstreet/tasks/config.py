@@ -111,6 +111,14 @@ CELERY_ROUTES = {
         'queue': 'storage_tasks.read',
         'routing_key': 'storage_tasks.read'
     },
+    'wallstreet.tasks.storage_tasks.load_symbols_has_no_stock_info_details': {
+        'queue': 'storage_tasks.read',
+        'routing_key': 'storage_tasks.read'
+    },
+    'wallstreet.tasks.storage_tasks.save_stock_info_detail': {
+        'queue': 'storage_tasks.read',
+        'routing_key': 'storage_tasks.read'
+    },
     # storage write
     'wallstreet.tasks.storage_tasks.save_stock_day': {
         'queue': 'storage_tasks.write',
@@ -136,6 +144,18 @@ CELERY_ROUTES = {
         'queue': 'storage_tasks.write',
         'routing_key': 'storage_tasks.write'
     },
+    'wallstreet.tasks.storage_tasks.update_all_stock_info_details': {
+        'queue': 'storage_tasks.write',
+        'routing_key': 'storage_tasks.write'
+    },
+    'wallstreet.tasks.storage_tasks.get_all_stock_info_details': {
+        'queue': 'storage_tasks.write',
+        'routing_key': 'storage_tasks.write'
+    },
+    'wallstreet.tasks.storage_tasks.get_stock_info_details': {
+        'queue': 'storage_tasks.write',
+        'routing_key': 'storage_tasks.write'
+    }
 }
 
 CELERY_ANNOTATIONS = {

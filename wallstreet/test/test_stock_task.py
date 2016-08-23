@@ -86,3 +86,9 @@ def test_update_year_fiscal():
     assert len(t) > 0
     assert "AAPL" not in set(t) and "BIDU" not in set(t)
 
+
+def test_update_stock_info_details():
+    get_all_stock_info_details(["BIDU", "AAPL"])
+    storage = StockInfoDetailSqlStorage(engine, Session)
+    t = storage.load("AAPL")
+    assert t.symbol == "AAPL"

@@ -123,6 +123,13 @@ class IssueHolderAPI(object):
     def parse_ret(self, symbol, content):
         raise NotImplementedError
 
+class CompanyAPI(object):
+    def get_url_params(self, symbols):
+        raise NotImplementedError
+
+    def parse_ret(self, content):
+        raise NotImplementedError
+
 
 class EdgarAPI(object):
     def __init__(self, key):
@@ -213,6 +220,33 @@ class EdgarIssueHolderAPI(IssueHolderAPI, EdgarAPI):
 
     def parse_ret(self, symbol, content):
         raise NotImplementedError
+
+
+class EdgarCompanyAPI(CompanyAPI, EdgarAPI):
+    def get_url_params(self, symbols):
+        if isinstance(symbols, str):
+            symbols = [symbols]
+        symbol = ",".join(symbols)
+        api = 'http://edgaronline.api.mashery.com/v2/companies?appkey={0}&primarysymbols={1}&' \
+              'fields=primarysymbol,primaryexchange,siccode,industry,sector,city'.format(self.key, symbol)
+        headers = {
+            "Accept": "application/json, text/javascript, */*; q=0.01"
+        }
+        return api, "GET", headers, {}
+
+    def parse_ret(self, content):
+        t = json.loads(content.decode("utf-8"))
+        ret = []
+        values = {}
+        for row in t["result"]["rows"]:
+            for kv in row["values"]:
+                values[kv["field"]] = kv["value"]
+            ret.append(base.StockInfoDetail(symbol=values["primarysymbol"], exchange=values["primaryexchange"],
+                                            siccode=values["siccode"], industry=values["industry"],
+                                            sector=values["sector"], city=values["city"]))
+        return ret
+
+
 
 
 

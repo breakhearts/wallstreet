@@ -401,6 +401,7 @@ class RawYearFiscalReportStorage(object):
     def load_symbols(self):
         raise NotImplementedError
 
+
 class RawYearFiscalReportSqlStorage(RawYearFiscalReportStorage, SqlStorage):
     def save(self, reports):
         if not isinstance(reports, list):
@@ -511,6 +512,73 @@ class RawQuarterFiscalReportSqlStorage(RawQuarterFiscalReportStorage, SqlStorage
         finally:
             session.close()
         return [x[0] for x in records]
+
+
+class StockInfoDetail(Base):
+    __tablename__ = "stock_info_details"
+    symbol = Column(String(32), primary_key=True)
+    exchange = Column(String(32))
+    industry = Column(String(32))
+    sector = Column(String(32))
+    siccode = Column(String(16))
+    city = Column(String(32))
+
+
+class StockInfoDetailStorage(object):
+    def save(self, stock_info):
+        raise NotImplementedError
+
+    def load(self, symbol):
+        raise NotImplementedError
+
+    def load_all(self):
+        raise NotImplementedError
+
+
+class StockInfoDetailSqlStorage(StockInfoDetailStorage, SqlStorage):
+    def save(self, stock_info_details):
+        if not isinstance(stock_info_details, list):
+            stock_info_details = [stock_info_details]
+        session = self.Session()
+        try:
+            for t in stock_info_details:
+                session.add(StockInfoDetail(symbol=t.symbol, exchange=t.exchange, industry=t.industry,
+                                                 sector=t.sector, siccode=t.siccode, city=t.city))
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    def load_all(self):
+        session = self.Session()
+        try:
+            t = session.query(StockInfoDetail).all()
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+        return t
+
+    def load(self, symbol):
+        session = self.Session()
+        try:
+            t = session.query(StockInfoDetail).filter(StockInfoDetail.symbol == symbol).first()
+            if t is None:
+                ret = None
+            else:
+                ret = base.StockInfoDetail(symbol=t.symbol, exchange=t.exchange, industry=t.industry,
+                                     sector=t.sector, siccode=t.siccode, city=t.city)
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+        return ret
 
 
 def create_sql_table(engine):

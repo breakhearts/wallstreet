@@ -151,20 +151,28 @@ class RawFiscalReport(object):
         self.content = content
 
     def serializable_obj(self):
-        return {
-            "symbol": self.symbol,
-            "fiscal_period": self.fiscal_period,
-            "content": self.content
-        }
+        return self.__dict__
 
     @staticmethod
     def from_serializable_obj(obj):
-        return RawFiscalReport(
-            symbol=obj["symbol"],
-            fiscal_period=obj["fiscal_period"],
-            content=obj["content"]
-        )
+        return RawFiscalReport(**obj)
 
+
+class StockInfoDetail(object):
+    def __init__(self, symbol, exchange, siccode, industry, sector, city):
+        self.symbol = symbol
+        self.exchange = exchange
+        self.industry = industry
+        self.sector = sector
+        self.siccode = siccode
+        self.city = city
+
+    def serializable_obj(self):
+        return self.__dict__
+
+    @staticmethod
+    def from_serializable_obj(obj):
+        return StockInfoDetail(**obj)
 
 
 def get_day_str(date):

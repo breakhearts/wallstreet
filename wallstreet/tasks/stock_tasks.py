@@ -1,12 +1,13 @@
 from __future__ import absolute_import
 from celery import Task
 from wallstreet.crawel.fetcher import RequestsFetcher
-from wallstreet.crawel.stockapi import YahooHistoryDataAPI, NasdaqStockInfoAPI, EdgarYearReportAPI
+from wallstreet.crawel.stockapi import YahooHistoryDataAPI, NasdaqStockInfoAPI, EdgarYearReportAPI, EdgarCompanyAPI
 from wallstreet.tasks.celery import app
 from wallstreet import base
 from wallstreet.tasks.storage_tasks import save_stock_day, load_all_stock_info, save_stock_info
 from wallstreet.tasks.storage_tasks import load_last_update_date, save_stock_year_fiscal
 from wallstreet.tasks.storage_tasks import compute_base_index, clear_stock, load_symbols_has_no_year_fiscal_report
+from wallstreet.tasks.storage_tasks import load_symbols_has_no_stock_info_details, save_stock_info_detail
 from celery.utils.log import get_task_logger
 from wallstreet.storage import LastUpdateStorage
 from wallstreet.tasks.task_monitor import task_counter
@@ -164,8 +165,6 @@ def update_all_year_fiscal_report():
 
 @app.task
 def get_all_stock_year_fiscal(symbols):
-    #stocks = [base.StockInfo.from_serializable_obj(x) for x in stocks]
-    #symbols = [x.symbol for x in stocks]
     logger.debug("len = {0}".format(len(symbols)))
     batch_size = 5
     t = []
@@ -183,6 +182,50 @@ def get_stock_year_fiscal(self, symbols, timeout=30):
     logger.debug("symbols={0}".format(symbols))
     api = EdgarYearReportAPI(config.get("edgar", "core_key"))
     url, method, headers, data = api.get_url_params(symbols=symbols, start_year=1970, end_year=9999)
+    try:
+        fetcher = RequestsFetcher(timeout=timeout)
+        status_code, content = fetcher.fetch(url, method, headers, data)
+        if status_code != 200:
+            logger.debug("status_code={0}".format(status_code))
+            if status_code == 404:
+                raise Ignore()
+            else:
+                raise self.retry()
+        ret = api.parse_ret(content)
+        logger.debug("ok, symbols={0}".format(symbols))
+    except Exception as exc:
+        if isinstance(exc, Ignore):
+            raise exc
+        else:
+            logger.error(traceback.format_exc())
+            raise self.retry(exc=exc, timeout=60)
+    return [x.serializable_obj() for x in ret]
+
+
+@app.task
+def update_all_stock_info_details():
+    load_symbols_has_no_stock_info_details.apply_async(link=get_all_stock_info_details.s())
+
+
+@app.task
+def get_all_stock_info_details(symbols):
+    logger.debug("len = {0}".format(len(symbols)))
+    batch_size = 5
+    t = []
+    for index, symbol in enumerate(symbols):
+        t.append(symbol)
+        if len(t) % batch_size == 0:
+            get_stock_info_details.apply_async((t,), link=save_stock_info_detail.s())
+            t = []
+    if len(t) > 0:
+        get_stock_info_details.apply_async((t,), link=save_stock_info_detail.s())
+
+
+@app.task(bind=True, max_retries=3, default_retry_delay=30)
+def get_stock_info_details(self, symbols, timeout=30):
+    logger.debug("symbols={0}".format(symbols))
+    api = EdgarCompanyAPI(config.get("edgar", "core_key"))
+    url, method, headers, data = api.get_url_params(symbols=symbols)
     try:
         fetcher = RequestsFetcher(timeout=timeout)
         status_code, content = fetcher.fetch(url, method, headers, data)
