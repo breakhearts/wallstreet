@@ -3,6 +3,7 @@ from datetime import datetime
 from wallstreet.base import StockDay, StockInfo
 from dateutil.parser import parse
 from wallstreet import base
+from collections import defaultdict
 import json
 
 
@@ -237,13 +238,14 @@ class EdgarCompanyAPI(CompanyAPI, EdgarAPI):
     def parse_ret(self, content):
         t = json.loads(content.decode("utf-8"))
         ret = []
-        values = {}
+        values = defaultdict(str)
         for row in t["result"]["rows"]:
             for kv in row["values"]:
                 values[kv["field"]] = kv["value"]
-            ret.append(base.StockInfoDetail(symbol=values["primarysymbol"], exchange=values["primaryexchange"],
-                                            siccode=values["siccode"], industry=values["industry"],
-                                            sector=values["sector"], city=values["city"]))
+            if "primarysymbol" in values:
+                ret.append(base.StockInfoDetail(symbol=values["primarysymbol"], exchange=values["primaryexchange"],
+                                                siccode=values["siccode"], industry=values["industry"],
+                                                sector=values["sector"], city=values["city"]))
         return ret
 
 
