@@ -159,13 +159,14 @@ class RawFiscalReport(object):
 
 
 class StockInfoDetail(object):
-    def __init__(self, symbol, exchange, siccode, industry, sector, city):
+    def __init__(self, symbol, exchange, cik, siccode, industry, sector, city):
         self.symbol = symbol
         self.exchange = exchange
         self.industry = industry
         self.sector = sector
         self.siccode = siccode
         self.city = city
+        self.cik = cik
 
     def serializable_obj(self):
         return self.__dict__
