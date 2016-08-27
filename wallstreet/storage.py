@@ -584,6 +584,65 @@ class StockInfoDetailSqlStorage(StockInfoDetailStorage, SqlStorage):
             session.close()
         return ret
 
+
+class SECFillingStorage(object):
+    def save(self, sec_filling):
+        raise NotImplementedError
+
+    def load(self, cik, start_date=None, end_date=None):
+        raise NotImplementedError
+
+
+class SECFilling(Base):
+    __tablename__ = "sec_fillings"
+    url = Column(String(128), primary_key=True)
+    company_name = Column(String(64))
+    cik = Column(String(32))
+    date = Column(DateTime)
+    form_type = Column(String(16))
+
+
+class SECFillingSqlStorage(SECFillingStorage, SqlStorage):
+    def load(self, cik, form_type=None, start_date=None, end_date=None):
+        session = self.Session()
+        try:
+            records = session.query(SECFilling).filter(SECFilling.cik == cik)
+            if start_date is not None:
+                records = records.filter(SECFilling.date >= start_date)
+            if end_date is not None:
+                records = records.filter(SECFilling.date <= end_date)
+            if form_type is not None:
+                records = records.filter(SECFilling.form_type == form_type)
+            ret = []
+            for t in records:
+                ret.append(base.SECFilling(company_name=t.company_name, cik=t.cik, form_type=t.form_type,
+                                           date=t.date, url=t.url))
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+        return ret
+
+    def save(self, sec_fillings):
+        session = self.Session()
+        if not isinstance(sec_fillings, list):
+            sec_fillings = [sec_fillings]
+        try:
+            for t in sec_fillings:
+                if not t.url.endswith('htm'):
+                    print(t.url)
+                session.add(SECFilling(company_name=t.company_name, cik=t.cik, form_type=t.form_type,
+                                       date=t.date, url=t.url))
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+
 def create_sql_table(engine):
     Base.metadata.create_all(engine)
 

@@ -2,7 +2,6 @@ from __future__ import absolute_import
 from wallstreet import base
 from wallstreet.crawler.fetcher import CurlFetcher
 from wallstreet.crawler.stockapi import SECAPI
-from wallstreet import config
 import os
 
 
@@ -17,7 +16,7 @@ class SECCrawler(object):
         api = SECAPI()
         with open(filename, "rb") as f:
             content = f.read()
-            idx = api.parse_idx(content, ["10-K", "10-Q", "20-F"])
+            idx = api.parse_idx(content)
             return idx
 
     def download_quarter_idx_file(self, year, quarter, filename):
@@ -35,9 +34,3 @@ class SECCrawler(object):
             if status_code != 200:
                 return status_code, None
         return status_code, self.load_idx_file(filename)
-
-if __name__ == "__main__":
-    crawler = SECCrawler(config.get("sec", "data_dir"))
-    status_code, ret = crawler.load_quarter_idx("2015", 1)
-    for t in ret:
-        print(t)

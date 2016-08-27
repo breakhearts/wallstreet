@@ -3,7 +3,7 @@ from datetime import datetime
 from wallstreet.base import StockDay, StockInfo
 from dateutil.parser import parse
 from wallstreet import base
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import json
 
 
@@ -259,7 +259,7 @@ class SECAPI(object):
         return api, "GET", {"user-agent": base.random_ua()}, {}
 
     def parse_idx(self, content, filter_form_type=None):
-        ret = []
+        ret = OrderedDict()
         for index, line in enumerate(content.decode("utf-8").splitlines()):
             if line.find("http") == -1:
                 continue
@@ -267,8 +267,8 @@ class SECAPI(object):
                 line[0:62].strip(), line[62:74].strip(), line[74:86].strip(), line[86:98].strip(), line[98:].strip()
             if filter_form_type and form_type not in set(filter_form_type):
                 continue
-            ret.append((company_name, form_type, cik, date, url))
-        return ret
+            ret[url] = base.SECFilling(company_name, form_type, cik, date, url)
+        return ret.values()
 
     def crawler_to_xbrl_url(self, url):
         t = url.split("/")

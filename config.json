@@ -33,7 +33,7 @@
       ]
     },
     "sec": {
-      "data_dir": "/Users/apple/sec"
+      "data_dir": "data/sec"
     },
     "edgar":{
       "core_key" : "XXXXX"

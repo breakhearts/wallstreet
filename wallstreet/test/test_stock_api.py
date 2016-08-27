@@ -54,7 +54,7 @@ class TestEdgarAPI:
         raw_report = api.parse_ret(content)
         assert len(raw_report) == 3
 
-    def test_compnay_report(self):
+    def test_company_report(self):
         api = stockapi.EdgarCompanyAPI(config.get_test("edgar", "core_key"))
         url, method, headers, data = api.get_url_params(["BIDU", "BABA"])
         fetcher = RequestsFetcher(timeout=30)

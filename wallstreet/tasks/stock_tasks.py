@@ -1,6 +1,6 @@
 from __future__ import absolute_import
-from celery import Task
 from wallstreet.crawler.fetcher import RequestsFetcher
+from wallstreet.crawler import sec
 from wallstreet.crawler.stockapi import YahooHistoryDataAPI, NasdaqStockInfoAPI, EdgarYearReportAPI, EdgarCompanyAPI
 from wallstreet.tasks.celery import app
 from wallstreet import base
@@ -8,6 +8,7 @@ from wallstreet.tasks.storage_tasks import save_stock_day, load_all_stock_info, 
 from wallstreet.tasks.storage_tasks import load_last_update_date, save_stock_year_fiscal
 from wallstreet.tasks.storage_tasks import compute_base_index, clear_stock, load_symbols_has_no_year_fiscal_report
 from wallstreet.tasks.storage_tasks import load_symbols_has_no_stock_info_details, save_stock_info_detail
+from wallstreet.tasks.storage_tasks import save_stock_fillings
 from celery.utils.log import get_task_logger
 from wallstreet.storage import LastUpdateStorage
 from wallstreet.tasks.task_monitor import task_counter
@@ -244,3 +245,36 @@ def get_stock_info_details(self, symbols, timeout=30):
             logger.error(traceback.format_exc())
             raise self.retry(exc=exc, timeout=60)
     return [x.serializable_obj() for x in ret]
+
+
+@app.task(bind=True, max_retries=3, default_retry_delay=30)
+def update_sec_fillings(self, data_dir, year, quarter):
+    crawler = sec.SECCrawler(data_dir)
+    try:
+        status_code, fillings = crawler.load_quarter_idx(year, quarter)
+        if status_code != 200:
+            logger.debug("status_code={0}".format(status_code))
+            if status_code == 404:
+                raise Ignore()
+            else:
+                raise self.retry()
+        save_stock_fillings.apply_async(([x.serializable_obj() for x in fillings],))
+        logger.debug("ok")
+    except Exception as exc:
+        if isinstance(exc, Ignore):
+            raise exc
+        else:
+            logger.error(traceback.format_exc())
+            raise self.retry(exc=exc)
+
+
+@app.task
+def update_all_sec_fillings(start_year, start_quarter, end_year, end_quarter):
+    for year in range(start_year, end_year + 1):
+        for quarter in range(1, 5):
+            if year == start_year and quarter < start_quarter:
+                continue
+            if year == end_quarter and quarter > end_quarter:
+                break
+            update_sec_fillings.apply_async((config.get("sec", "data_dir"), year, quarter))
+            logger.debug("new task, year = {0}, quarter = {1}".format(year, quarter))
