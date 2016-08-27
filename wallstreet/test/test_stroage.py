@@ -154,3 +154,19 @@ class TestStockInfoDetailSqlStorage:
         assert len(t) == 2
         t = storage.load("BIDU")
         assert t.symbol == "BIDU"
+
+
+class TestSECFillingSqlStorage:
+    def test_save_load(self, engine_and_session_cls):
+        engine, session_cls = engine_and_session_cls
+        storage = SECFillingSqlStorage(engine, session_cls)
+        storage.save(base.SECFilling(company_name="Facebook", cik="1234453", form_type="10-K", date=datetime(2015, 1, 31), url="http:/111"))
+        storage.save(base.SECFilling(company_name="Facebook", cik="1234453", form_type="10-Q", date=datetime(2015, 1, 31), url="http:/112"))
+        storage.save(base.SECFilling(company_name="Facebook", cik="1234453", form_type="8-K", date=datetime(2015, 1, 31), url="http:/113"))
+        storage.save(base.SECFilling(company_name="Facebook", cik="1234453", form_type="10-K", date=datetime(2015, 1, 31), url="http:/114"))
+        storage.save(base.SECFilling(company_name="Facebook", cik="1234453", form_type="10-Q", date=datetime(2015, 1, 31), url="http:/115"))
+        storage.save(base.SECFilling(company_name="Facebook", cik="1234453", form_type="8-K", date=datetime(2015, 1, 31), url="http:/116"))
+        storage.save(base.SECFilling(company_name="Baba", cik="22222", form_type="10-Q", date=datetime(2015, 1, 31), url="http:/1157"))
+        storage.save(base.SECFilling(company_name="Baba", cik="22222", form_type="8-K", date=datetime(2015, 1, 31), url="http:/118"))
+        t = storage.load("1234453", "10-Q")
+        assert len(t) == 2

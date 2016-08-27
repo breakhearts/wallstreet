@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from wallstreet.storage import StockDaySqlStorage, StockInfoSqlStorage, LastUpdateSqlStorage, BaseIndexSqlStorage
 from wallstreet.storage import LastUpdateStorage, RawYearFiscalReportSqlStorage, StockInfoDetailSqlStorage
+from wallstreet.storage import SECFillingSqlStorage
 from wallstreet.tasks.celery import app, engine, Session
 from celery.utils.log import get_task_logger
 from wallstreet.base import StockDay, StockInfo, BaseIndex, RawFiscalReport, StockInfoDetail
@@ -179,3 +180,16 @@ def save_stock_info_detail(details):
             logger.error(traceback.format_exc())
             raise
         logger.debug("ok")
+
+
+@app.task
+def save_stock_fillings(fillings):
+    fillings = [base.SECFilling.from_serializable_obj(x) for x in fillings]
+    if len(fillings) > 0:
+        try:
+            storage = SECFillingSqlStorage(engine, Session)
+            storage.save(fillings)
+            logger.debug("ok")
+        except Exception as exc:
+            logger.error(traceback.format_exc())
+            raise

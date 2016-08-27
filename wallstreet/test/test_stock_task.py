@@ -40,7 +40,7 @@ def test_get_all_stock_history(engine_and_session_cls):
     assert t > datetime(2016, 1, 1)
 
 
-def test_update_stock_base_index():
+def test_update_stock_base_index(engine_and_session_cls):
     stock_days = []
     for i in range(40):
         stock_days.append(base.StockDay("FB", datetime(2005, 1, 1) + timedelta(days=i * 2), 1, 1, 1, 1, 1, 1))
@@ -61,21 +61,21 @@ def test_update_stock_base_index():
     assert t[0].vol20 == 1
 
 
-def test_update_stock_info():
+def test_update_stock_info(engine_and_session_cls):
     t = update_stock_info("NASDAQ")
     t = [base.StockInfo.from_serializable_obj(x) for x in t]
     assert len(t) > 100
     assert t[0].exchange == "NASDAQ"
 
 
-def test_update_all_stock_info():
+def test_update_all_stock_info(engine_and_session_cls):
     update_all_stock_info()
     storage = StockInfoSqlStorage(engine, Session)
     t = storage.load_all()
     assert len(t) > 1000
 
 
-def test_update_year_fiscal():
+def test_update_year_fiscal(engine_and_session_cls):
     get_all_stock_year_fiscal(["BIDU", "AAPL"])
     storage = RawYearFiscalReportSqlStorage(engine, Session)
     t = storage.load("AAPL")
@@ -87,7 +87,7 @@ def test_update_year_fiscal():
     assert "AAPL" not in set(t) and "BIDU" not in set(t)
 
 
-def test_update_stock_info_details():
+def test_update_stock_info_details(engine_and_session_cls):
     get_all_stock_info_details(["BIDU", "AAPL"])
     storage = StockInfoDetailSqlStorage(engine, Session)
     t = storage.load("AAPL")

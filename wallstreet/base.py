@@ -176,6 +176,22 @@ class StockInfoDetail(object):
         return StockInfoDetail(**obj)
 
 
+class SECFilling(object):
+    def __init__(self, company_name, form_type, cik, date, url):
+        self.company_name = company_name
+        self.form_type = form_type
+        self.cik = cik
+        self.date = date
+        self.url = url
+
+    def serializable_obj(self):
+        return self.__dict__
+
+    @staticmethod
+    def from_serializable_obj(obj):
+        return SECFilling(**obj)
+
+
 def get_day_str(date):
     return date.strftime("%Y%m%d")
 
@@ -240,6 +256,7 @@ def get_last_after_hour_date():
     else:
         t = ny_now
     return get_trading_date_skip_weekend(t)
+
 
 UA_LIST = [
     "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_8; en-us) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50",

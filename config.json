@@ -32,7 +32,10 @@
         "xxx@163.com"
       ]
     },
-  "edgar":{
-    "core_key" : "XXXXX"
-  }
+    "sec": {
+      "data_dir": "data/sec"
+    },
+    "edgar":{
+      "core_key" : "XXXXX"
+    }
 }

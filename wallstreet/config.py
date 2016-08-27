@@ -20,11 +20,20 @@ def get(section, key):
         return config[section][key]
 
 
+def get_path(section, key):
+    t = get(section, key)
+    if t.startswith("/"):
+        return t
+    else:
+        return os.path.join(os.path.join(os.path.dirname(__file__), ".."), t)
+
+
 def set_config(section, key, value):
     try:
         local_config[section][key] = value
     except:
         config[section][key] = value
+
 
 def get_int(section, key):
     return int(get(section, key))

@@ -3,7 +3,7 @@ from datetime import datetime
 from wallstreet.base import StockDay, StockInfo
 from dateutil.parser import parse
 from wallstreet import base
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import json
 
 
@@ -247,6 +247,41 @@ class EdgarCompanyAPI(CompanyAPI, EdgarAPI):
                                                 siccode=values["siccode"], industry=values["industry"],
                                                 sector=values["sector"], city=values["city"], cik=values["cik"]))
         return ret
+
+
+class SECAPI(object):
+    def quarter_idx_url_params(self, year, quarter):
+        api = "ftp://ftp.sec.gov/edgar/full-index/{0}/QTR{1}/crawler.idx".format(year, quarter)
+        return api, "GET", {"user-agent": base.random_ua()}, {}
+
+    def daily_idx_url_params(self, year, month, day):
+        api = "ftp://ftp.sec.gov/edgar/daily-index/crawler.{0:0>4}{1:0>2}{2:0>2}.idx".format(year, month, day)
+        return api, "GET", {"user-agent": base.random_ua()}, {}
+
+    def parse_idx(self, content, filter_form_type=None):
+        ret = OrderedDict()
+        for index, line in enumerate(content.decode("utf-8").splitlines()):
+            if line.find("http") == -1:
+                continue
+            company_name,  form_type, cik, date, url = \
+                line[0:62].strip(), line[62:74].strip(), line[74:86].strip(), line[86:98].strip(), line[98:].strip()
+            if filter_form_type and form_type not in set(filter_form_type):
+                continue
+            ret[url] = base.SECFilling(company_name, form_type, cik, date, url)
+        return ret.values()
+
+    def crawler_to_xbrl_url(self, url):
+        t = url.split("/")
+        cik, _id = t[-2], t[-1]
+        _id = _id.replace("-index.htm", "")
+        return 'http://www.sec.gov/Archives/edgar/data/{0}/{1}/{2}-xbrl.zip'.format(cik, _id.replace('-', ''), _id)
+
+    def crawler_to_txt_url(self, url):
+        t = url.split("/")
+        cik, _id = t[-2], t[-1]
+        _id = _id.replace("-index.htm", "")
+        return 'http://www.sec.gov/Archives/edgar/data/{0}/{1}/{2}.txt'.format(cik, _id.replace('-', ''), _id)
+
 
 
 

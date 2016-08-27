@@ -37,7 +37,8 @@ CELERY_QUEUES = (
     Queue('default', Exchange('default', routing_key='default')),
     Queue('stock_tasks', Exchange('stock_tasks', type='topic'), routing_key='stock_tasks.#'),
     Queue('storage_tasks.read', Exchange('storage_tasks.read', type='topic'), routing_key='storage_tasks.read'),
-    Queue('storage_tasks.write', Exchange('storage_tasks.write', type='topic'), routing_key='storage_tasks.write')
+    Queue('storage_tasks.write', Exchange('storage_tasks.write', type='topic'), routing_key='storage_tasks.write'),
+    Queue('sec_tasks', Exchange('sec_tasks', type='topic'), routing_key='sec_tasks.#')
 )
 
 CELERY_ROUTES = {
@@ -106,6 +107,15 @@ CELERY_ROUTES = {
         'queue': 'stock_tasks',
         'routing_key': 'stock_tasks.get_stock_info_details'
     },
+    #sec
+    'wallstreet.tasks.stock_tasks.update_sec_fillings': {
+        'queue': 'sec_tasks',
+        'routing_key': 'sec_tasks.update_sec_fillings'
+    },
+    'wallstreet.tasks.stock_tasks.update_all_sec_fillings': {
+        'queue': 'sec_tasks',
+        'routing_key': 'sec_tasks.update_all_sec_fillings'
+    },
     #storage read
     'wallstreet.tasks.storage_tasks.load_all_stock_info': {
         'queue': 'storage_tasks.read',
@@ -153,6 +163,10 @@ CELERY_ROUTES = {
         'routing_key': 'storage_tasks.write'
     },
     'wallstreet.tasks.storage_tasks.save_stock_info_detail': {
+        'queue': 'storage_tasks.write',
+        'routing_key': 'storage_tasks.write'
+    },
+    'wallstreet.tasks.storage_tasks.save_stock_fillings': {
         'queue': 'storage_tasks.write',
         'routing_key': 'storage_tasks.write'
     },
