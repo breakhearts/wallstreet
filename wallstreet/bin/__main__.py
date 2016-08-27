@@ -27,7 +27,7 @@ def main():
         update_all_stock_info_details()
     elif len(args.sec) > 0:
         start_year, start_quarter, end_year, end_quarter = args.sec
-        update_all_sec_fillings(start_year, start_quarter, end_year, end_quarter)
+        update_all_sec_fillings(int(start_year), int(start_quarter), int(end_year), int(end_quarter))
 
 if __name__ == "__main__":
     main()
