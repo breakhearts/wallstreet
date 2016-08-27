@@ -249,6 +249,19 @@ class EdgarCompanyAPI(CompanyAPI, EdgarAPI):
         return ret
 
 
+class SECAPI(object):
+    def quarter_idx_url_params(self, year, quarter):
+        api = "ftp://ftp.sec.gov/edgar/full-index/{0}/QTR{1}/crawler.idx".format(year, quarter)
+        return "GET", {"user-agent": base.random_ua()}, {}
+
+    def daily_idx_url_params(self, year, month, day):
+        api = "ftp://ftp.sec.gov/edgar/daily-index/crawler.{0:0>4}{1:0>2}{2:0>2}.idx".format(year, month, day)
+        return "GET", {"user-agent": base.random_ua()}, {}
+
+    def parse_idx(self, content):
+        pass
+
+
 
 
 

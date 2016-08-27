@@ -2,6 +2,15 @@
 fetch web resource
 """
 import requests
+from io import BytesIO
+import pycurl
+import certifi
+try:
+    # python 3
+    from urllib.parse import urlencode
+except ImportError:
+    # python 2
+    from urllib import urlencode
 
 
 class Fetcher(object):
@@ -13,7 +22,7 @@ class Fetcher(object):
         raise NotImplementedError
 
 
-class RequestsFetcher(object):
+class RequestsFetcher(Fetcher):
     def __init__(self, timeout=10):
         self.timeout = timeout
 
@@ -28,3 +37,36 @@ class RequestsFetcher(object):
         else:
             raise ValueError
         return r.status_code, r.content
+
+
+class CurlFetcher(Fetcher):
+    def __init__(self, timeout=10):
+        self.timeout = timeout
+
+    def fetch(self, url, method, headers, data):
+        buffer = BytesIO()
+        c = pycurl.Curl()
+        c.setopt(c.URL, url)
+        c.setopt(c.WRITEDATA, buffer)
+        c.setopt(c.CAINFO, certifi.where())
+        c.setopt(c.TIMEOUT, self.timeout)
+        if method == "POST":
+            post_fields = urlencode(data)
+            c.setopt(c.POSTFIELDS, post_fields)
+        if len(headers) > 0:
+            list_headers = []
+            for k, v in headers.items():
+                list_headers.append('{0}:{1}'.format(k, v))
+            c.setopt(c.HTTPHEADER, list_headers)
+        try:
+            status_code = 200
+            c.perform()
+        except pycurl.error as exc:
+            if exc.args[0] == 78:
+                status_code = 404
+            else:
+                raise
+        if url.startswith("http"):
+            status_code = c.getinfo(pycurl.HTTP_CODE)
+        c.close()
+        return status_code, buffer.getvalue()
