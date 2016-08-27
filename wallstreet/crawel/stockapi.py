@@ -229,7 +229,7 @@ class EdgarCompanyAPI(CompanyAPI, EdgarAPI):
             symbols = [symbols]
         symbol = ",".join(symbols)
         api = 'http://edgaronline.api.mashery.com/v2/companies?appkey={0}&primarysymbols={1}&' \
-              'fields=primarysymbol,primaryexchange,siccode,industry,sector,city'.format(self.key, symbol)
+              'fields=primarysymbol,cik,primaryexchange,siccode,industry,sector,city'.format(self.key, symbol)
         headers = {
             "Accept": "application/json, text/javascript, */*; q=0.01"
         }
@@ -245,7 +245,7 @@ class EdgarCompanyAPI(CompanyAPI, EdgarAPI):
             if "primarysymbol" in values:
                 ret.append(base.StockInfoDetail(symbol=values["primarysymbol"], exchange=values["primaryexchange"],
                                                 siccode=values["siccode"], industry=values["industry"],
-                                                sector=values["sector"], city=values["city"]))
+                                                sector=values["sector"], city=values["city"], cik=values["cik"]))
         return ret
 
 

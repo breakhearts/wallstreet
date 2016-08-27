@@ -517,6 +517,7 @@ class RawQuarterFiscalReportSqlStorage(RawQuarterFiscalReportStorage, SqlStorage
 class StockInfoDetail(Base):
     __tablename__ = "stock_info_details"
     symbol = Column(String(32), primary_key=True)
+    cik = Column(String(32))
     exchange = Column(String(32))
     industry = Column(String(32))
     sector = Column(String(32))
@@ -542,7 +543,7 @@ class StockInfoDetailSqlStorage(StockInfoDetailStorage, SqlStorage):
         session = self.Session()
         try:
             for t in stock_info_details:
-                session.add(StockInfoDetail(symbol=t.symbol, exchange=t.exchange, industry=t.industry,
+                session.add(StockInfoDetail(symbol=t.symbol, cik=t.cik, exchange=t.exchange, industry=t.industry,
                                                  sector=t.sector, siccode=t.siccode, city=t.city))
             session.commit()
         except:
@@ -556,7 +557,7 @@ class StockInfoDetailSqlStorage(StockInfoDetailStorage, SqlStorage):
         try:
             ret = []
             for t in session.query(StockInfoDetail):
-                ret.append(StockInfoDetail(symbol=t.symbol, exchange=t.exchange, industry=t.industry,
+                ret.append(StockInfoDetail(symbol=t.symbol, cik=t.cik, exchange=t.exchange, industry=t.industry,
                                                  sector=t.sector, siccode=t.siccode, city=t.city))
             session.commit()
         except:
@@ -573,7 +574,7 @@ class StockInfoDetailSqlStorage(StockInfoDetailStorage, SqlStorage):
             if t is None:
                 ret = None
             else:
-                ret = base.StockInfoDetail(symbol=t.symbol, exchange=t.exchange, industry=t.industry,
+                ret = base.StockInfoDetail(symbol=t.symbol, cik=t.cik, exchange=t.exchange, industry=t.industry,
                                      sector=t.sector, siccode=t.siccode, city=t.city)
             session.commit()
         except:

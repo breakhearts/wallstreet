@@ -148,8 +148,8 @@ class TestStockInfoDetailSqlStorage:
     def test_save_load(self, engine_and_session_cls):
         engine, session_cls = engine_and_session_cls
         storage = StockInfoDetailSqlStorage(engine, session_cls)
-        storage.save(base.StockInfoDetail("BIDU", "NASDAQ", "XX", "sector", "siccode", "city"))
-        storage.save(base.StockInfoDetail("BABA", "NASDAQ", "XX", "sector", "siccode", "city"))
+        storage.save(base.StockInfoDetail("BIDU", "NASDAQ", "xx", "XX", "sector", "siccode", "city"))
+        storage.save(base.StockInfoDetail("BABA", "NASDAQ", "xx", "XX", "sector", "siccode", "city"))
         t = storage.load_all()
         assert len(t) == 2
         t = storage.load("BIDU")
