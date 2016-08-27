@@ -1,6 +1,6 @@
 from __future__ import absolute_import
-from wallstreet.crawel import stockapi
-from wallstreet.crawel.fetcher import RequestsFetcher
+from wallstreet.crawler import stockapi
+from wallstreet.crawler.fetcher import RequestsFetcher
 from datetime import datetime
 from wallstreet import config
 

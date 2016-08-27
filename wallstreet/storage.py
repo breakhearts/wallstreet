@@ -584,7 +584,6 @@ class StockInfoDetailSqlStorage(StockInfoDetailStorage, SqlStorage):
             session.close()
         return ret
 
-
 def create_sql_table(engine):
     Base.metadata.create_all(engine)
 

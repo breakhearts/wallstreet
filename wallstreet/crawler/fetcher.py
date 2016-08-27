@@ -21,6 +21,9 @@ class Fetcher(object):
     def fetch(self, url, method, headers, data):
         raise NotImplementedError
 
+    def fetch_to_file(self, url, method, headers, data, filename):
+        raise NotImplementedError
+
 
 class RequestsFetcher(Fetcher):
     def __init__(self, timeout=10):
@@ -37,6 +40,9 @@ class RequestsFetcher(Fetcher):
         else:
             raise ValueError
         return r.status_code, r.content
+
+    def fetch_to_file(self, url, method, headers, data, filename):
+        raise NotImplementedError
 
 
 class CurlFetcher(Fetcher):
@@ -70,3 +76,34 @@ class CurlFetcher(Fetcher):
             status_code = c.getinfo(pycurl.HTTP_CODE)
         c.close()
         return status_code, buffer.getvalue()
+
+    def fetch_to_file(self, url, method, headers, data, filename):
+        with open(filename, "wb") as f:
+            c = pycurl.Curl()
+            c.setopt(c.URL, url)
+            c.setopt(c.WRITEDATA, f)
+            c.setopt(c.CAINFO, certifi.where())
+            c.setopt(c.TIMEOUT, self.timeout)
+            if url.startswith("ftp"):
+                c.setopt(c.FTP_RESPONSE_TIMEOUT, self.timeout)
+            if method == "POST":
+                post_fields = urlencode(data)
+                c.setopt(c.POSTFIELDS, post_fields)
+            if len(headers) > 0:
+                list_headers = []
+                for k, v in headers.items():
+                    list_headers.append('{0}:{1}'.format(k, v))
+                c.setopt(c.HTTPHEADER, list_headers)
+            try:
+                status_code = 200
+                c.perform()
+            except pycurl.error as exc:
+                if exc.args[0] == 78:
+                    status_code = 404
+                else:
+                    raise
+            if url.startswith("http"):
+                status_code = c.getinfo(pycurl.HTTP_CODE)
+            c.close()
+            return status_code
+

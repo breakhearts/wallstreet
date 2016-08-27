@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from celery import Task
-from wallstreet.crawel.fetcher import RequestsFetcher
-from wallstreet.crawel.stockapi import YahooHistoryDataAPI, NasdaqStockInfoAPI, EdgarYearReportAPI, EdgarCompanyAPI
+from wallstreet.crawler.fetcher import RequestsFetcher
+from wallstreet.crawler.stockapi import YahooHistoryDataAPI, NasdaqStockInfoAPI, EdgarYearReportAPI, EdgarCompanyAPI
 from wallstreet.tasks.celery import app
 from wallstreet import base
 from wallstreet.tasks.storage_tasks import save_stock_day, load_all_stock_info, save_stock_info
