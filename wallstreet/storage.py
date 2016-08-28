@@ -597,9 +597,14 @@ class SECFilling(Base):
     __tablename__ = "sec_fillings"
     url = Column(String(128), primary_key=True)
     company_name = Column(String(64))
-    cik = Column(String(32))
+    cik = Column(String(16))
     date = Column(DateTime)
     form_type = Column(String(16))
+    __table_args__ = (
+        Index("date", "date", unique=False),
+        Index("cik", "cik", unique=False),
+        Index("form_type", "cik", unique=False),
+    )
 
 
 class SECFillingSqlStorage(SECFillingStorage, SqlStorage):
