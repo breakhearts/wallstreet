@@ -270,7 +270,7 @@ class SECAPI(object):
             t = url.split("/")
             _, _id = t[-2], t[-1]
             _id = _id.replace("-index.htm", "")
-            ret[url] = base.SECFilling(company_name, form_type, cik, date, _id)
+            ret[url] = base.SECFilling(id=_id, company_name=company_name, form_type=form_type, cik=cik, date=date)
         return ret.values()
 
     def cik_id_to_xbrl_url(self, cik, _id):
