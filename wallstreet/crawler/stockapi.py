@@ -273,12 +273,13 @@ class SECAPI(object):
             ret[url] = base.SECFilling(id=_id, company_name=company_name, form_type=form_type, cik=cik, date=date)
         return ret.values()
 
-    def cik_id_to_xbrl_url(self, cik, _id):
-        return 'http://www.sec.gov/Archives/edgar/data/{0}/{1}/{2}-xbrl.zip'.format(cik, _id.replace('-', ''), _id)
+    def xbrl_url_params(self, cik, _id):
+        api = 'http://www.sec.gov/Archives/edgar/data/{0}/{1}/{2}-xbrl.zip'.format(cik, _id.replace('-', ''), _id)
+        return api, "GET", {"user-agent": base.random_ua()}, {}
 
-    def cik_id_to_txt_url(self, cik, _id):
-        return 'http://www.sec.gov/Archives/edgar/data/{0}/{1}/{2}.txt'.format(cik, _id.replace('-', ''), _id)
-
+    def txt__url_params(self, cik, _id):
+        api = 'http://www.sec.gov/Archives/edgar/data/{0}/{1}/{2}.txt'.format(cik, _id.replace('-', ''), _id)
+        return api, "GET", {"user-agent": base.random_ua()}, {}
 
 
 

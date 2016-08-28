@@ -252,10 +252,11 @@ def update_sec_fillings(self, data_dir, year, quarter):
     crawler = sec.SECCrawler(data_dir)
     try:
         status_code, fillings = crawler.load_quarter_idx(
-            year, quarter, filter_form_type=["10-K", "10-K/A", "10-K405", "10-Q", "10-Q/A", "20-F", "20-F/A", "8-K", "8-K/A",
-                                             "6-K", "6-K/A", "3", "3/A", "4", "4/A", "5", "5/A", "SC 13G/A", "SC 13G",
-                                             "13F-HR", "13F-HR/A", "13F-NT", "13F-NT/A", "S-1", "S-1/A", "F-6", "F-6/A",
-                                             "F-1", "F-1/A", "POS AM", "S-8", "S-8/A"])
+            year, quarter, filter_form_type=["10-K", "10-K/A", "10-K405", "10-K405/A", "10-Q", "10-Q/A",
+                                             "20-F", "20-F/A", "8-K", "8-K/A", "6-K", "6-K/A", "3", "3/A",
+                                             "4", "4/A", "5", "5/A", "SC 13G/A", "SC 13G", "13F-HR", "13F-HR/A",
+                                             "13F-NT", "13F-NT/A", "S-1", "S-1/A", "F-6", "F-6/A", "F-1", "F-1/A",
+                                             "POS AM", "S-8", "S-8/A"])
         if status_code != 200:
             logger.debug("status_code={0}".format(status_code))
             if status_code == 404:
@@ -278,7 +279,7 @@ def update_all_sec_fillings(start_year, start_quarter, end_year, end_quarter):
         for quarter in range(1, 5):
             if year == start_year and quarter < start_quarter:
                 continue
-            if year == end_quarter and quarter > end_quarter:
+            if year == end_year and quarter > end_quarter:
                 break
             update_sec_fillings.apply_async((config.get("sec", "idx_dir"), year, quarter))
             logger.debug("new task, year = {0}, quarter = {1}".format(year, quarter))
