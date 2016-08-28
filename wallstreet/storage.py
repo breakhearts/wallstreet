@@ -601,7 +601,7 @@ class SECFilling(Base):
     date = Column(DateTime)
     form_type = Column(String(16))
     __table_args__ = (
-        Index("cik_date", "cik", "date", unique=False)
+        Index("cik_date", "cik", "date", unique=False),
     )
 
 
