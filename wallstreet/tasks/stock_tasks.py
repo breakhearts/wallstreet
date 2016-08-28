@@ -11,7 +11,7 @@ from wallstreet.tasks.storage_tasks import load_symbols_has_no_stock_info_detail
 from wallstreet.tasks.storage_tasks import save_stock_fillings
 from celery.utils.log import get_task_logger
 from wallstreet.storage import LastUpdateStorage
-from wallstreet.tasks.task_monitor import task_counter
+#from wallstreet.tasks.task_monitor import task_counter
 from wallstreet.notification.notifier import email_notifier
 from celery.exceptions import Ignore
 from dateutil.parser import parse
@@ -85,7 +85,7 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
         real_start_date = start_date
     url, method, headers, data = api.get_url_params(symbol, real_start_date, end_date)
     fetcher = RequestsFetcher(timeout=timeout)
-    task_counter.new("HISTORY_TASKS")
+    #task_counter.new("HISTORY_TASKS")
     try:
         status_code, content = fetcher.fetch(url, method, headers, data)
         if status_code != 200:
@@ -113,7 +113,7 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
                         break
             ret = ret[start_index:]
         logger.debug("ok, symbol={0}, total={1}".format(symbol, len(ret)))
-        task_counter.succeeded("HISTORY_TASKS")
+        #task_counter.succeeded("HISTORY_TASKS")
     except Exception as exc:
         if isinstance(exc, Ignore):
             raise exc
@@ -265,7 +265,7 @@ def update_sec_fillings(self, data_dir, year, quarter):
             else:
                 raise self.retry()
         save_stock_fillings.apply_async(([x.serializable_obj() for x in fillings],))
-        logger.debug("ok, year = {0}, quarter = {1}")
+        logger.debug("ok, year = {0}, quarter = {1}".format(year, quarter))
     except Exception as exc:
         if isinstance(exc, Ignore):
             raise exc

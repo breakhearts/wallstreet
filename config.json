@@ -6,12 +6,6 @@
     "fetcher":{
       "timeout": 20
     },
-    "counter":{
-      "host": "localhost",
-      "host_test": "localhost",
-      "port": 6379,
-      "db": 1
-    },
     "storage":{
       "db": "sql",
       "url": "mysql+pymysql://root@localhost/wallstreet",
