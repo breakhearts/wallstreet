@@ -43,7 +43,7 @@ def update_stock_info(self, exchange):
         logger.debug("ok, exchange={0}, total={1}".format(exchange, len(ret)))
         return [x.serializable_obj() for x in ret]
     except Exception as exc:
-        logger.error(traceback.format_exc())
+        logger.error("exchange = {0}, exc = {1}".format(exchange, traceback.format_exc()))
         raise self.retry(exc=exc)
 
 
@@ -58,7 +58,7 @@ def get_all_stock_history(stocks):
     for stock_info in stocks:
         load_last_update_date.apply_async((stock_info.symbol, LastUpdateStorage.STOCK_DAY),
                                           link=update_stock_history.s(stock_info.symbol))
-    logger.debug("ok")
+    logger.debug("ok, len = {0}".format(len(stocks)))
 
 
 @app.task
@@ -118,9 +118,10 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
         if isinstance(exc, Ignore):
             raise exc
         else:
-            logger.error(traceback.format_exc())
+            logger.error("symbol = {0}, exc = {1}".format(symbol, traceback.format_exc()))
             raise self.retry(exc=exc, timeout=config.get("fetcher", "timeout") * min(self.request.retries+1, 5))
     return [x.serializable_obj() for x in ret]
+
 
 @app.task
 def report_tasks():
@@ -156,7 +157,7 @@ def update_stock_base_index(last_update_date, symbol):
     fetch_days = (last_after_hour_date - last_update_date).days - 1 + 60
     compute_base_index.apply_async((symbol, fetch_days, last_update_date.strftime("%Y-%m-%d"),
                                     last_after_hour_date.strftime("%Y-%m-%d")))
-    logger.debug("ok")
+    logger.debug("ok, symbol = {0}, last_update_date = {1}".format(symbol, last_update_date))
 
 
 @app.task
@@ -252,10 +253,11 @@ def update_sec_fillings(self, data_dir, year, quarter):
     crawler = sec.SECCrawler(data_dir)
     try:
         status_code, fillings = crawler.load_quarter_idx(
-            year, quarter, filter_form_type=["10-K", "10-K/A", "10-K405", "10-Q", "10-Q/A", "20-F", "20-F/A", "8-K", "8-K/A",
-                                             "6-K", "6-K/A", "3", "3/A", "4", "4/A", "5", "5/A", "SC 13G/A", "SC 13G",
-                                             "13F-HR", "13F-HR/A", "13F-NT", "13F-NT/A", "S-1", "S-1/A", "F-6", "F-6/A",
-                                             "F-1", "F-1/A", "POS AM", "S-8", "S-8/A"])
+            year, quarter, filter_form_type=["10-K", "10-K/A", "10-K405", "10-K405/A", "10-Q", "10-Q/A",
+                                             "20-F", "20-F/A", "8-K", "8-K/A", "6-K", "6-K/A", "3", "3/A",
+                                             "4", "4/A", "5", "5/A", "SC 13G/A", "SC 13G", "13F-HR", "13F-HR/A",
+                                             "13F-NT", "13F-NT/A", "S-1", "S-1/A", "F-6", "F-6/A", "F-1", "F-1/A",
+                                             "POS AM", "S-8", "S-8/A"])
         if status_code != 200:
             logger.debug("status_code={0}".format(status_code))
             if status_code == 404:
@@ -263,12 +265,12 @@ def update_sec_fillings(self, data_dir, year, quarter):
             else:
                 raise self.retry()
         save_stock_fillings.apply_async(([x.serializable_obj() for x in fillings],))
-        logger.debug("ok")
+        logger.debug("ok, year = {0}, quarter = {1}")
     except Exception as exc:
         if isinstance(exc, Ignore):
             raise exc
         else:
-            logger.error(traceback.format_exc())
+            logger.error("year = {0}, quarter = {1}, exc = {2}".format(year, quarter, traceback.format_exc()))
             raise self.retry(exc=exc)
 
 
@@ -278,7 +280,7 @@ def update_all_sec_fillings(start_year, start_quarter, end_year, end_quarter):
         for quarter in range(1, 5):
             if year == start_year and quarter < start_quarter:
                 continue
-            if year == end_quarter and quarter > end_quarter:
+            if year == end_year and quarter > end_quarter:
                 break
             update_sec_fillings.apply_async((config.get("sec", "idx_dir"), year, quarter))
             logger.debug("new task, year = {0}, quarter = {1}".format(year, quarter))
