@@ -22,7 +22,7 @@ class SECCrawler(object):
     def download_quarter_idx_file(self, year, quarter, filename):
         api = SECAPI()
         url, method, headers, data = api.quarter_idx_url_params(year, quarter)
-        fetcher = CurlFetcher(60*60)
+        fetcher = CurlFetcher(60*30)
         return fetcher.fetch_to_file(url, method, headers, data, filename=filename)
 
     def load_quarter_idx(self, year, quarter, filter_form_type=None):
