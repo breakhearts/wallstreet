@@ -3,7 +3,7 @@ storage
 """
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Float, Text, DateTime, Index
+from sqlalchemy import Column, Integer, String, Float, Text, DateTime, Index, PrimaryKeyConstraint
 from sqlalchemy.orm import sessionmaker
 from wallstreet import base
 
@@ -595,12 +595,13 @@ class SECFillingStorage(object):
 
 class SECFilling(Base):
     __tablename__ = "sec_fillings"
-    id = Column(String(32), primary_key=True)
+    id = Column(String(32))
     company_name = Column(String(64))
     cik = Column(String(16))
     date = Column(DateTime)
     form_type = Column(String(16))
     __table_args__ = (
+        PrimaryKeyConstraint('id', 'cik'),
         Index("cik_date", "cik", "date", unique=False),
     )
 
