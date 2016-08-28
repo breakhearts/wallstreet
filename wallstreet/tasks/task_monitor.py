@@ -36,5 +36,5 @@ class TaskCounter(object):
             ret[key.decode("utf-8")] = int(self.r.get(key))
         return ret
 
-task_counter = TaskCounter(host=config.get("counter", "host"), port=config.get_int("counter", "port"),
-                           db=config.get("counter", "db"))
+#task_counter = TaskCounter(host=config.get("counter", "host"), port=config.get_int("counter", "port"),
+#                           db=config.get("counter", "db"))
