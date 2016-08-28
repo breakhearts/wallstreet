@@ -236,7 +236,7 @@ class EdgarCompanyAPI(CompanyAPI, EdgarAPI):
         return api, "GET", headers, {}
 
     def parse_ret(self, content):
-        t = json.loads(content.decode("utf-8"))
+        t = json.loads(content.decode("utf-8", "ignore"))
         ret = []
         values = defaultdict(str)
         for row in t["result"]["rows"]:
@@ -260,7 +260,7 @@ class SECAPI(object):
 
     def parse_idx(self, content, filter_form_type=None):
         ret = OrderedDict()
-        for index, line in enumerate(content.decode("utf-8").splitlines()):
+        for index, line in enumerate(content.decode("utf-8", "ignore").splitlines()):
             if line.find("http") == -1:
                 continue
             company_name,  form_type, cik, date, url = \
