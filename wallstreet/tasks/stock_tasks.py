@@ -43,7 +43,7 @@ def update_stock_info(self, exchange):
         logger.debug("ok, exchange={0}, total={1}".format(exchange, len(ret)))
         return [x.serializable_obj() for x in ret]
     except Exception as exc:
-        logger.error(traceback.format_exc())
+        logger.error("exchange = {0}, exc = {1}".format(exchange, traceback.format_exc()))
         raise self.retry(exc=exc)
 
 
@@ -58,7 +58,7 @@ def get_all_stock_history(stocks):
     for stock_info in stocks:
         load_last_update_date.apply_async((stock_info.symbol, LastUpdateStorage.STOCK_DAY),
                                           link=update_stock_history.s(stock_info.symbol))
-    logger.debug("ok")
+    logger.debug("ok, len = {0}".format(len(stocks)))
 
 
 @app.task
@@ -118,9 +118,10 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
         if isinstance(exc, Ignore):
             raise exc
         else:
-            logger.error(traceback.format_exc())
+            logger.error("symbol = {0}, exc = {1}".format(symbol, traceback.format_exc()))
             raise self.retry(exc=exc, timeout=config.get("fetcher", "timeout") * min(self.request.retries+1, 5))
     return [x.serializable_obj() for x in ret]
+
 
 @app.task
 def report_tasks():
@@ -156,7 +157,7 @@ def update_stock_base_index(last_update_date, symbol):
     fetch_days = (last_after_hour_date - last_update_date).days - 1 + 60
     compute_base_index.apply_async((symbol, fetch_days, last_update_date.strftime("%Y-%m-%d"),
                                     last_after_hour_date.strftime("%Y-%m-%d")))
-    logger.debug("ok")
+    logger.debug("ok, symbol = {0}, last_update_date = {1}".format(symbol, last_update_date))
 
 
 @app.task
@@ -264,12 +265,12 @@ def update_sec_fillings(self, data_dir, year, quarter):
             else:
                 raise self.retry()
         save_stock_fillings.apply_async(([x.serializable_obj() for x in fillings],))
-        logger.debug("ok")
+        logger.debug("ok, year = {0}, quarter = {1}")
     except Exception as exc:
         if isinstance(exc, Ignore):
             raise exc
         else:
-            logger.error(traceback.format_exc())
+            logger.error("year = {0}, quarter = {1}, exc = {2}".format(year, quarter, traceback.format_exc()))
             raise self.retry(exc=exc)
 
 
