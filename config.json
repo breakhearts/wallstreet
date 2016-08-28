@@ -33,7 +33,7 @@
       ]
     },
     "sec": {
-      "data_dir": "data/sec"
+      "idx_dir": "data/sec"
     },
     "edgar":{
       "core_key" : "XXXXX"

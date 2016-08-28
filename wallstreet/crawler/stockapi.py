@@ -267,19 +267,16 @@ class SECAPI(object):
                 line[0:62].strip(), line[62:74].strip(), line[74:86].strip(), line[86:98].strip(), line[98:].strip()
             if filter_form_type and form_type not in set(filter_form_type):
                 continue
-            ret[url] = base.SECFilling(company_name, form_type, cik, date, url)
+            t = url.split("/")
+            _, _id = t[-2], t[-1]
+            _id = _id.replace("-index.htm", "")
+            ret[url] = base.SECFilling(company_name, form_type, cik, date, _id)
         return ret.values()
 
-    def crawler_to_xbrl_url(self, url):
-        t = url.split("/")
-        cik, _id = t[-2], t[-1]
-        _id = _id.replace("-index.htm", "")
+    def cik_id_to_xbrl_url(self, cik, _id):
         return 'http://www.sec.gov/Archives/edgar/data/{0}/{1}/{2}-xbrl.zip'.format(cik, _id.replace('-', ''), _id)
 
-    def crawler_to_txt_url(self, url):
-        t = url.split("/")
-        cik, _id = t[-2], t[-1]
-        _id = _id.replace("-index.htm", "")
+    def cik_id_to_txt_url(self, cik, _id):
         return 'http://www.sec.gov/Archives/edgar/data/{0}/{1}/{2}.txt'.format(cik, _id.replace('-', ''), _id)
 
 

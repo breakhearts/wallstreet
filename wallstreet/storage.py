@@ -595,7 +595,7 @@ class SECFillingStorage(object):
 
 class SECFilling(Base):
     __tablename__ = "sec_fillings"
-    url = Column(String(128), primary_key=True)
+    id = Column(String(32), primary_key=True)
     company_name = Column(String(64))
     cik = Column(String(16))
     date = Column(DateTime)
@@ -619,7 +619,7 @@ class SECFillingSqlStorage(SECFillingStorage, SqlStorage):
             ret = []
             for t in records:
                 ret.append(base.SECFilling(company_name=t.company_name, cik=t.cik, form_type=t.form_type,
-                                           date=t.date, url=t.url))
+                                           date=t.date, id=t.id))
             session.commit()
         except:
             session.rollback()
@@ -634,10 +634,8 @@ class SECFillingSqlStorage(SECFillingStorage, SqlStorage):
             sec_fillings = [sec_fillings]
         try:
             for t in sec_fillings:
-                if not t.url.endswith('htm'):
-                    print(t.url)
                 session.add(SECFilling(company_name=t.company_name, cik=t.cik, form_type=t.form_type,
-                                       date=t.date, url=t.url))
+                                       date=t.date, id=t.id))
             session.commit()
         except:
             session.rollback()

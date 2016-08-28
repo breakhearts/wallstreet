@@ -5,6 +5,7 @@ import requests
 from io import BytesIO
 import pycurl
 import certifi
+import os
 try:
     # python 3
     from urllib.parse import urlencode
@@ -21,7 +22,7 @@ class Fetcher(object):
     def fetch(self, url, method, headers, data):
         raise NotImplementedError
 
-    def fetch_to_file(self, url, method, headers, data, filename):
+    def fetch_to_file(self, url, method, headers, data, filename, resume_broken_downloads=True):
         raise NotImplementedError
 
 
@@ -41,7 +42,7 @@ class RequestsFetcher(Fetcher):
             raise ValueError
         return r.status_code, r.content
 
-    def fetch_to_file(self, url, method, headers, data, filename):
+    def fetch_to_file(self, url, method, headers, data, filename, resume_broken_downloads=True):
         raise NotImplementedError
 
 
@@ -79,11 +80,43 @@ class CurlFetcher(Fetcher):
         c.close()
         return status_code, buffer.getvalue()
 
-    def fetch_to_file(self, url, method, headers, data, filename):
-        status_code, content = self.fetch(url, method, headers, data)
-        if status_code != 200:
-            return status_code
-        with open(filename, "wb") as f:
-            f.write(content)
+    def fetch_to_file(self, url, method, headers, data, filename, resume_broken_downloads=True):
+        download_file = filename + ".download"
+        start_pos = 0
+        if resume_broken_downloads and os.path.exists(download_file):
+            start_pos = os.path.getsize(download_file)
+        status_code = 200
+        finished = False
+        with open(download_file, "ab") as f:
+            c = pycurl.Curl()
+            c.setopt(c.URL, url)
+            c.setopt(c.WRITEDATA, f)
+            c.setopt(c.CAINFO, certifi.where())
+            c.setopt(c.TIMEOUT, self.timeout)
+            if start_pos > 0:
+                c.setopt(c.RANGE, "{0}-".format(start_pos))
+            #if url.startswith("ftp"):
+            #    c.setopt(c.FTP_RESPONSE_TIMEOUT, self.timeout)
+            if method == "POST":
+                post_fields = urlencode(data)
+                c.setopt(c.POSTFIELDS, post_fields)
+            if len(headers) > 0:
+                list_headers = []
+                for k, v in headers.items():
+                    list_headers.append('{0}:{1}'.format(k, v))
+                c.setopt(c.HTTPHEADER, list_headers)
+            try:
+                c.perform()
+                if url.startswith("http"):
+                    status_code = c.getinfo(pycurl.HTTP_CODE)
+                finished = True
+            except pycurl.error as exc:
+                if exc.args[0] == 78:
+                    status_code = 404
+                else:
+                    raise
+            finally:
+                c.close()
+        if finished:
+            os.rename(download_file, filename)
         return status_code
-

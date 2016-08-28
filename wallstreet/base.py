@@ -177,12 +177,12 @@ class StockInfoDetail(object):
 
 
 class SECFilling(object):
-    def __init__(self, company_name, form_type, cik, date, url):
+    def __init__(self, id, company_name, form_type, cik, date):
         self.company_name = company_name
         self.form_type = form_type
         self.cik = cik
         self.date = date
-        self.url = url
+        self.id = id
 
     def serializable_obj(self):
         return self.__dict__
