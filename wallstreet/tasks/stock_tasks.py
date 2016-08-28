@@ -265,7 +265,7 @@ def update_sec_fillings(self, data_dir, year, quarter):
             else:
                 raise self.retry()
         save_stock_fillings.apply_async(([x.serializable_obj() for x in fillings],))
-        logger.debug("ok, year = {0}, quarter = {1}")
+        logger.debug("ok, year = {0}, quarter = {1}".format(year, quarter))
     except Exception as exc:
         if isinstance(exc, Ignore):
             raise exc
