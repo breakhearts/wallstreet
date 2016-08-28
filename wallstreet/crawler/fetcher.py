@@ -59,6 +59,8 @@ class CurlFetcher(Fetcher):
         if method == "POST":
             post_fields = urlencode(data)
             c.setopt(c.POSTFIELDS, post_fields)
+        if url.startswith("ftp"):
+            c.setopt("FTP_RESPONSE_TIMEOUT", self.timeout)
         if len(headers) > 0:
             list_headers = []
             for k, v in headers.items():
