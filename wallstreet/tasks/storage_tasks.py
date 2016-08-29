@@ -183,7 +183,7 @@ def save_stock_info_detail(details):
 
 
 @app.task
-def save_stock_fillings(fillings):
+def save_stock_fillings_idx(fillings):
     fillings = [base.SECFilling.from_serializable_obj(x) for x in fillings]
     if len(fillings) > 0:
         try:
@@ -193,3 +193,16 @@ def save_stock_fillings(fillings):
         except Exception as exc:
             logger.error(traceback.format_exc())
             raise
+
+
+@app.task
+def load_sec_fillings_idx(symbol, form_type=None, start_date=None, end_date=None):
+    storage = StockInfoDetailSqlStorage(engine, Session)
+    detail = storage.load(symbol)
+    if detail is None:
+        return []
+    cik = detail.cik.lstrip("0")
+    storage = SECFillingSqlStorage(engine, Session)
+    fillings = storage.load(cik, form_type, start_date, end_date)
+    ret = [x.serializable_obj() for x in fillings]
+    return ret

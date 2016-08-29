@@ -616,7 +616,9 @@ class SECFillingSqlStorage(SECFillingStorage, SqlStorage):
             if end_date is not None:
                 records = records.filter(SECFilling.date <= end_date)
             if form_type is not None:
-                records = records.filter(SECFilling.form_type == form_type)
+                if not isinstance(form_type, list):
+                    form_type = [form_type]
+                records = records.filter(SECFilling.form_type._in(form_type))
             ret = []
             for t in records:
                 ret.append(base.SECFilling(company_name=t.company_name, cik=t.cik, form_type=t.form_type,

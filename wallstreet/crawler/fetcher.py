@@ -64,6 +64,8 @@ class CurlFetcher(Fetcher):
             c.setopt(c.TCP_KEEPALIVE, 1)
             c.setopt(c.TCP_KEEPIDLE, 30)
             c.setopt(c.TCP_KEEPINTV, 30)
+        elif url.startswith("http"):
+            c.setopt(c.FOLLOWLOCATION, 1)
         if len(headers) > 0:
             list_headers = []
             for k, v in headers.items():
@@ -89,7 +91,11 @@ class CurlFetcher(Fetcher):
             start_pos = os.path.getsize(download_file)
         status_code = 200
         finished = False
-        with open(download_file, "ab") as f:
+        if resume_broken_downloads:
+            flag = "ab"
+        else:
+            flag = "wb"
+        with open(download_file, flag) as f:
             c = pycurl.Curl()
             c.setopt(c.URL, url)
             c.setopt(c.WRITEDATA, f)
@@ -106,6 +112,8 @@ class CurlFetcher(Fetcher):
                 c.setopt(c.TCP_KEEPALIVE, 1)
                 c.setopt(c.TCP_KEEPIDLE, 30)
                 c.setopt(c.TCP_KEEPINTV, 30)
+            elif url.startswith("http"):
+                c.setopt(c.FOLLOWLOCATION, 1)
             if len(headers) > 0:
                 list_headers = []
                 for k, v in headers.items():
@@ -124,5 +132,8 @@ class CurlFetcher(Fetcher):
             finally:
                 c.close()
         if finished:
-            os.rename(download_file, filename)
+            if status_code == 200:
+                os.rename(download_file, filename)
+            elif status_code == 404:
+                os.remove(download_file)
         return status_code
