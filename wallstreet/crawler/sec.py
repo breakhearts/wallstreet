@@ -39,6 +39,8 @@ class SECCrawler(object):
 
     def download_txt_filling(self, filling):
         filename = os.path.join(self.filling_dir, "{0}/{1}.txt".format(filling.cik, filling.id))
+        if os.path.exists(filename):
+            return 200
         base.wise_mk_dir_for_file(filename)
         api = SECAPI()
         url, method, headers, data = api.txt__url_params(filling.cik, filling.id)
@@ -48,6 +50,8 @@ class SECCrawler(object):
 
     def download_xbrl_filling(self, filling):
         filename = os.path.join(self.filling_dir, "{0}/{1}_xbrl.zip".format(filling.cik, filling.id))
+        if os.path.exists(filename):
+            return 200
         base.wise_mk_dir_for_file(filename)
         api = SECAPI()
         url, method, headers, data = api.xbrl_url_params(filling.cik, filling.id)
