@@ -38,21 +38,21 @@ Finally, you need create a database named `wallstreet` to save collected data.
 You need start all celery workers as your fist step, [Supervisor](http://supervisord.org/) is a cool process manager and monitor tool can save your time, and you can read [supervisor.conf](supervisor.conf) to learning how to start them manually.
 
 Some configure need be modified in your machine, you need edit `config.json` create a new `config_local.json`(only covers modified fields):
-```json
+```
 {
     "celery":{
-      "broker_url": "redis://localhost:6379/0"                          //redis url as celery broker
+      "broker_url": "redis://localhost:6379/0"                          /*redis url as celery broker*/
     },
     "storage":{                                                         
       "db": "sql",
-      "url": "mysql+pymysql://root@localhost/wallstreet"                //mysql url as data storage
+      "url": "mysql+pymysql://root@localhost/wallstreet"                /*mysql url as data storage*/
     },
-    "log_server": {                                                     //logger server if you run workers in more than one manchines, logs will send to central log server
+    "log_server": {                                                     /*logger server if you run workers in more than one manchines, logs will send to central log server*/
       "host": "localhost",                                                      
       "port": 9020
     }
     "edgar":{
-      "core_key" : "XXXXX"                                              //edgar api key if you use edgar api
+      "core_key": "XXXXX"                                              /*edgar api key if you use edgar api*/
     }
 }
 ```
