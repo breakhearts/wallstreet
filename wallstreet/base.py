@@ -185,10 +185,17 @@ class SECFilling(object):
         self.id = id
 
     def serializable_obj(self):
-        return self.__dict__
+        return {
+            "company_name": self.company_name,
+            "form_type": self.form_type,
+            "cik": self.cik,
+            "date": self.date.strftime("%Y-%m-%d"),
+            "id": self.id
+        }
 
     @staticmethod
     def from_serializable_obj(obj):
+        obj["date"] = parse(obj["date"])
         return SECFilling(**obj)
 
 
