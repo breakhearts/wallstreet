@@ -41,18 +41,18 @@ Some configure need be modified in your machine, you need edit `config.json` cre
 ```json
 {
     "celery":{
-      "broker_url": "redis://localhost:6379/0"                          //redis url as celery broker
+      "broker_url": "redis://localhost:6379/0"                          /*redis url as celery broker*/
     },
     "storage":{                                                         
       "db": "sql",
-      "url": "mysql+pymysql://root@localhost/wallstreet"                //mysql url as data storage
+      "url": "mysql+pymysql://root@localhost/wallstreet"                /*mysql url as data storage*/
     },
-    "log_server": {                                                     //logger server if you run workers in more than one manchines, logs will send to central log server
+    "log_server": {                                                     /*logger server if you run workers in more than one manchines, logs will send to central log server*/
       "host": "localhost",                                                      
       "port": 9020
     }
     "edgar":{
-      "core_key" : "XXXXX"                                              //edgar api key if you use edgar api
+      "core_key": "XXXXX"                                              /*edgar api key if you use edgar api*/
     }
 }
 ```
