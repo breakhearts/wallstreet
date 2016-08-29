@@ -8,7 +8,7 @@ from wallstreet.tasks.storage_tasks import save_stock_day, load_all_stock_info, 
 from wallstreet.tasks.storage_tasks import load_last_update_date, save_stock_year_fiscal
 from wallstreet.tasks.storage_tasks import compute_base_index, clear_stock, load_symbols_has_no_year_fiscal_report
 from wallstreet.tasks.storage_tasks import load_symbols_has_no_stock_info_details, save_stock_info_detail
-from wallstreet.tasks.storage_tasks import save_stock_fillings
+from wallstreet.tasks.storage_tasks import save_stock_fillings_idx, load_sec_fillings_idx
 from celery.utils.log import get_task_logger
 from wallstreet.storage import LastUpdateStorage
 #from wallstreet.tasks.task_monitor import task_counter
@@ -249,7 +249,7 @@ def get_stock_info_details(self, symbols, timeout=30):
 
 
 @app.task(bind=True, max_retries=3, default_retry_delay=30)
-def update_sec_fillings(self, data_dir, year, quarter):
+def update_sec_fillings_idx(self, data_dir, year, quarter):
     crawler = sec.SECCrawler(data_dir)
     try:
         status_code, fillings = crawler.load_quarter_idx(
@@ -264,7 +264,7 @@ def update_sec_fillings(self, data_dir, year, quarter):
                 raise Ignore()
             else:
                 raise self.retry()
-        save_stock_fillings.apply_async(([x.serializable_obj() for x in fillings],))
+        save_stock_fillings_idx.apply_async(([x.serializable_obj() for x in fillings],))
         logger.debug("ok, year = {0}, quarter = {1}".format(year, quarter))
     except Exception as exc:
         if isinstance(exc, Ignore):
@@ -275,12 +275,49 @@ def update_sec_fillings(self, data_dir, year, quarter):
 
 
 @app.task
-def update_all_sec_fillings(start_year, start_quarter, end_year, end_quarter):
+def update_all_sec_fillings_idx(start_year, start_quarter, end_year, end_quarter):
     for year in range(start_year, end_year + 1):
         for quarter in range(1, 5):
             if year == start_year and quarter < start_quarter:
                 continue
             if year == end_year and quarter > end_quarter:
                 break
-            update_sec_fillings.apply_async((config.get("sec", "idx_dir"), year, quarter))
+            update_sec_fillings_idx.apply_async((config.get("sec", "idx_dir"), year, quarter))
             logger.debug("new task, year = {0}, quarter = {1}".format(year, quarter))
+
+
+@app.task
+def update_sec_fillings(symbol, filling_type="txt", form_type=None, start_date=None, end_date=None):
+    load_sec_fillings_idx.apply_async((symbol, form_type, start_date, end_date), link=download_sec_fillings.s(filling_type))
+    logger.debug("ok, symbol = {0}, filling_type = {1}, forme_type = {2}, start_date = {3}, end_date = {4}".
+                 format(symbol, filling_type, form_type, start_date, end_date))
+
+
+@app.task
+def download_sec_fillings(fillings, filling_type):
+    for filling in fillings:
+        download_filling.apply_async((filling, filling_type))
+
+
+@app.task(bind=True, max_retries=3, default_retry_delay=30)
+def download_filling(self, filling, filling_type):
+    filling = base.SECFilling.from_serializable_obj(filling)
+    crawler = sec.SECCrawler(config.get_path("sec", "data_dir"))
+    try:
+        if filling_type == "txt":
+            status_code = crawler.download_txt_filling(filling)
+        elif filling_type == "xlbr":
+            status_code = crawler.download_xbrl_filling(filling)
+        if status_code != 200:
+            logger.debug("cik = {0}, id = {1}, status_code = {2}".format(filling.cik, filling.id, status_code))
+            if status_code == 404:
+                raise Ignore()
+            else:
+                raise self.retry()
+        logger.debug("ok, cik = {0}, id = {1}".format(filling.cik, filling.id))
+    except Exception as exc:
+        if isinstance(exc, Ignore):
+            raise exc
+        else:
+            logger.error("cik = {0}, id = {1}".format(filling.cik, filling.id, traceback.format_exc()))
+            raise self.retry(exc=exc)

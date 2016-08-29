@@ -8,9 +8,11 @@ import os
 class SECCrawler(object):
     def __init__(self, data_dir):
         self.data_dir = data_dir
+        self.idx_dir = os.path.join(self.data_dir, "idx")
+        self.filling_dir = os.path.join(self.data_dir, "fillings")
 
     def __quarter_idx_file(self, year, quarter):
-        return os.path.join(self.data_dir, "{0}/QTR{1}/crawler.idx".format(year, quarter))
+        return os.path.join(self.idx_dir, "{0}/QTR{1}/crawler.idx".format(year, quarter))
 
     def load_idx_file(self, filename, filter_form_type=None):
         api = SECAPI()
@@ -34,3 +36,25 @@ class SECCrawler(object):
             if status_code != 200:
                 return status_code, None
         return status_code, self.load_idx_file(filename, filter_form_type)
+
+    def download_txt_filling(self, filling):
+        filename = os.path.join(self.filling_dir, "{0}/{1}.txt".format(filling.cik, filling.id))
+        if os.path.exists(filename):
+            return 200
+        base.wise_mk_dir_for_file(filename)
+        api = SECAPI()
+        url, method, headers, data = api.txt__url_params(filling.cik, filling.id)
+        fetcher = CurlFetcher(60)
+        status_code = fetcher.fetch_to_file(url, method, headers, data, filename, resume_broken_downloads=False)
+        return status_code
+
+    def download_xbrl_filling(self, filling):
+        filename = os.path.join(self.filling_dir, "{0}/{1}_xbrl.zip".format(filling.cik, filling.id))
+        if os.path.exists(filename):
+            return 200
+        base.wise_mk_dir_for_file(filename)
+        api = SECAPI()
+        url, method, headers, data = api.xbrl_url_params(filling.cik, filling.id)
+        fetcher = CurlFetcher(60)
+        status_code = fetcher.fetch_to_file(url, method, headers, data, filename, resume_broken_downloads=False)
+        return status_code

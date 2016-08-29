@@ -27,7 +27,8 @@
       ]
     },
     "sec": {
-      "idx_dir": "data/sec"
+      "data_dir": "data",
+      "data_dir_test": "test_data"
     },
     "edgar":{
       "core_key" : "XXXXX"
