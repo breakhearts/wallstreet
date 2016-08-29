@@ -62,3 +62,8 @@ In the root directory, run
 python -m wallstreet.bin.__main__ -h
 ```
 you will see most of the commands available.
+
+And you can use `celery-flower` monitor tasks in http://localhost:5555:
+```base
+celery -A wallstreet.tasks flower
+```
