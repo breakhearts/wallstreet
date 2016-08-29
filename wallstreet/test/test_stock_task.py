@@ -1,13 +1,16 @@
 from __future__ import absolute_import
 import pytest
 from wallstreet import config
+import os
 config.set_config("storage", "url", config.get_test("storage", "url"))
+config.set_config("sec", "data_dir", config.get_test("sec", "data_dir"))
 from wallstreet.tasks.stock_tasks import *
 from wallstreet.tasks.storage_tasks import *
 from datetime import datetime, timedelta
 from wallstreet.storage import *
 from wallstreet import base
 from wallstreet.test.wrap_celery import engine, Session
+import shutil
 
 
 @pytest.fixture(scope="module")
@@ -16,6 +19,8 @@ def engine_and_session_cls(request):
 
     def teardown():
         drop_sql_table(engine)
+        if os.path.exists(config.get_path("sec", "data_dir")):
+            shutil.rmtree(config.get_path("sec", "data_dir"))
     request.addfinalizer(teardown)
 
 
@@ -92,3 +97,15 @@ def test_update_stock_info_details(engine_and_session_cls):
     storage = StockInfoDetailSqlStorage(engine, Session)
     t = storage.load("AAPL")
     assert t.symbol == "AAPL"
+
+
+def test_update_sec_fillings(engine_and_session_cls):
+    storage = SECFillingSqlStorage(engine, Session)
+    storage.save(
+        base.SECFilling(company_name="Facebook", cik="1326801", form_type="8-K", date=datetime(2015, 1, 31), id="0001326801-16-000060"))
+    storage = StockInfoDetailSqlStorage(engine, Session)
+    storage.save(base.StockInfoDetail("FB", "NASDAQ", "0001326801", "XX", "sector", "siccode", "city"))
+    update_sec_fillings(symbol="FB", filling_type="txt", form_type="8-K")
+    import os
+    assert os.path.getsize(os.path.join(config.get_path("sec", "data_dir"),
+                                        os.path.join("fillings/{0}/{1}.txt").format("1326801", "0001326801-16-000060") )) > 0

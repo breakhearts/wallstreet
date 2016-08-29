@@ -201,6 +201,10 @@ def load_sec_fillings_idx(symbol, form_type=None, start_date=None, end_date=None
     detail = storage.load(symbol)
     if detail is None:
         return []
+    if start_date:
+        start_date = parse(start_date)
+    if end_date:
+        end_date = parse(end_date)
     cik = detail.cik.lstrip("0")
     storage = SECFillingSqlStorage(engine, Session)
     fillings = storage.load(cik, form_type, start_date, end_date)

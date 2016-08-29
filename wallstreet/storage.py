@@ -618,7 +618,7 @@ class SECFillingSqlStorage(SECFillingStorage, SqlStorage):
             if form_type is not None:
                 if not isinstance(form_type, list):
                     form_type = [form_type]
-                records = records.filter(SECFilling.form_type._in(form_type))
+                records = records.filter(SECFilling.form_type.in_(form_type))
             ret = []
             for t in records:
                 ret.append(base.SECFilling(company_name=t.company_name, cik=t.cik, form_type=t.form_type,
