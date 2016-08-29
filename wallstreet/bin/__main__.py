@@ -2,7 +2,7 @@ import argparse
 import sys
 from wallstreet.tasks.stock_tasks import update_all_stock_info, update_all_stock_day, update_all_stock_base_index
 from wallstreet.tasks.stock_tasks import update_all_year_fiscal_report, update_all_stock_info_details
-from wallstreet.tasks.stock_tasks import update_all_sec_fillings_idx, update_sec_fillings_idx
+from wallstreet.tasks.stock_tasks import update_all_sec_fillings_idx, update_sec_fillings
 
 parser = argparse.ArgumentParser(description="wallstreet console")
 parser.add_argument('--info', dest="info", action='store_true', help="update stock info")
@@ -33,7 +33,7 @@ def main():
         update_all_sec_fillings_idx(int(start_year), int(start_quarter), int(end_year), int(end_quarter))
     elif args.filling and len(args.filling) > 0:
         symbol, filling_type, form_type, start_date, end_date = args.filling
-        update_sec_fillings_idx(symbol, filling_type, form_type, start_date, end_date)
+        update_sec_fillings(symbol, filling_type, form_type, start_date, end_date)
 
 if __name__ == "__main__":
     main()
