@@ -28,10 +28,10 @@ def main():
         update_all_year_fiscal_report()
     elif args.company:
         update_all_stock_info_details()
-    elif len(args.idx) > 0:
+    elif args.idx and len(args.idx) > 0:
         start_year, start_quarter, end_year, end_quarter = args.idx
         update_all_sec_fillings_idx(int(start_year), int(start_quarter), int(end_year), int(end_quarter))
-    elif len(args.filling) > 0:
+    elif args.filling and len(args.filling) > 0:
         symbol, filling_type, form_type, start_date, end_date = args.filling
         update_sec_fillings_idx(symbol, filling_type, form_type, start_date, end_date)
 
