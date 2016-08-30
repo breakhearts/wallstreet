@@ -8,5 +8,4 @@ redis>=2.10.5
 python-dateutil>=2.5.3
 Mailthon>=0.1.1
 pycurl>=7.43.0
-certifi
-tailer
+certifi>=2016.8.8
