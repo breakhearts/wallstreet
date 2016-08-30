@@ -1,40 +1,16 @@
 from __future__ import absolute_import
-import redis
-from collections import defaultdict, OrderedDict
-from wallstreet import config
 from celery.utils.log import get_task_logger
+from wallstreet.base import print_args
 
 logger = get_task_logger(__name__)
 
+task_failure_logger = get_task_logger("task_failure")
 
-class TaskCounter(object):
 
-    def __init__(self, host, port, db):
-        self.tasks = defaultdict(int)
-        self.r = redis.StrictRedis(host, port, db, socket_connect_timeout=10)
+class TaskFailureRecorder(object):
 
-    def reset(self):
-        for key in self.r.keys():
-            self.r.delete(key)
+    def on_task_failure(self, name, args, kwargs, traceback):
+        task_failure_logger.error("ERROR, name = {0}, args = {1}, kwargs = {2}, traceback = {3}"
+                                  .format(name, print_args(args), print_args(kwargs), traceback))
 
-    def new(self, name):
-        self.r.incr(name + ".sent", 1)
-
-    def succeeded(self, name):
-        self.r.incr(name + ".succeeded", 1)
-
-    def failed(self, name):
-        self.r.incr(name + ".failed", 1)
-
-    def report(self):
-        ret = OrderedDict()
-        keys = []
-        for key in self.r.keys():
-            keys.append(key)
-        keys.sort()
-        for key in keys:
-            ret[key.decode("utf-8")] = int(self.r.get(key))
-        return ret
-
-#task_counter = TaskCounter(host=config.get("counter", "host"), port=config.get_int("counter", "port"),
-#                           db=config.get("counter", "db"))
+task_faiure_recorder = TaskFailureRecorder()

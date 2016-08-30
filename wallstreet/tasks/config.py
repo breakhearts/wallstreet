@@ -25,10 +25,6 @@ CELERYBEAT_SCHEDULE = {
     'update_all_stock_base_index': {
         'task': 'wallstreet.tasks.stock_tasks.update_all_stock_base_index',
         'schedule': crontab(hour=4, minute=0, day_of_week='1-5')
-    },
-    'report_task': {
-        'task': 'wallstreet.tasks.stock_tasks.report_tasks',
-        'schedule': crontab(hour=6, minute=0, day_of_week='1-5')
     }
 }
 
@@ -66,10 +62,6 @@ CELERY_ROUTES = {
     'wallstreet.tasks.stock_tasks.get_stock_history': {
         'queue': 'stock_tasks',
         'routing_key': 'stock_tasks.get_stock_history'
-    },
-    'wallstreet.tasks.stock_tasks.report_tasks': {
-        'queue': 'stock_tasks',
-        'routing_key': 'stock_tasks.report_tasks'
     },
     'wallstreet.tasks.stock_tasks.update_all_stock_base_index': {
         'queue': 'stock_tasks',
@@ -129,7 +121,7 @@ CELERY_ROUTES = {
         'routing_key': 'sec_tasks.download_filling'
     },
     #storage read
-    'wallstreet.tasks.storage_tasks.load_all_stock_info': {
+    'wallstreet.tasks.storage_tasks.load_all_stock_symbols': {
         'queue': 'storage_tasks.read',
         'routing_key': 'storage_tasks.read'
     },

@@ -6,6 +6,7 @@ from datetime import datetime
 import os
 from dateutil.parser import parse
 from dateutil import tz
+import json
 
 
 class StockInfo(object):
@@ -285,3 +286,50 @@ UA_LIST = [
 def random_ua():
     import random
     return random.choice(UA_LIST)
+
+
+def print_args(obj):
+    def print_iterable(obj):
+        t = ""
+        for i, v in enumerate(obj):
+            if i >= 3:
+                t += ",..."
+                break
+            if t != "":
+                t += ","
+            t += print_args(v)
+        return t
+
+    def print_number(obj):
+        return str(obj)
+
+    def print_str(obj):
+        return '"{0}"'.format(obj)
+
+    def print_dict(obj):
+        t = ""
+        for i, (k, v) in enumerate(obj.items()):
+            if t != "":
+                t += ","
+            t += "{0}:{1}".format(print_args(k), print_args(v))
+        return t
+
+    def print_object(obj):
+        name = type(obj).__name__
+        if not hasattr(obj, "__dict__"):
+            return "{0}(...)".format(name)
+        else:
+            return "{0}({1})".format(name, print_dict(obj.__dict__))
+
+    if isinstance(obj, (int, float)):
+        return print_number(obj)
+    elif isinstance(obj, str):
+        return print_str(obj)
+    elif isinstance(obj, tuple):
+        return "({0})".format(print_iterable(obj))
+    elif isinstance(obj, list):
+        return "[{0}]".format(print_iterable(obj))
+    elif isinstance(obj, dict):
+        return "{" + print_dict(obj) + "}"
+    elif isinstance(obj, object):
+        return print_object(obj)

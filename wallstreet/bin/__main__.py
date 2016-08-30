@@ -2,7 +2,7 @@ import argparse
 import sys
 from wallstreet.tasks.stock_tasks import update_all_stock_info, update_all_stock_day, update_all_stock_base_index
 from wallstreet.tasks.stock_tasks import update_all_year_fiscal_report, update_all_stock_info_details
-from wallstreet.tasks.stock_tasks import update_all_sec_fillings_idx, update_sec_fillings
+from wallstreet.tasks.stock_tasks import update_all_sec_fillings_idx, update_sec_fillings, update_all_sec_fillings
 
 parser = argparse.ArgumentParser(description="wallstreet console")
 parser.add_argument('--info', dest="info", action='store_true', help="update stock info")
@@ -13,7 +13,11 @@ parser.add_argument('--company', dest="company", action='store_true', help="upda
 parser.add_argument('--idx', dest="idx",  nargs=4,   metavar=("start_year", "start_quarter", "end_year", "end_quarter"),
                     help="update sec fillings index")
 parser.add_argument('--filling', dest="filling",  nargs=5,
-                    metavar=("symbol", "filling_type", "form_type", "start_date", "end_date"))
+                    metavar=("symbol", "filling_type", "form_type", "start_date", "end_date"),
+                    help="update sec fillings by symbol")
+parser.add_argument('--filling_all', dest="filling_all",  nargs=4,
+                    metavar=("symbol", "filling_type", "form_type", "start_date", "end_date"),
+                    help="update all sec fillings")
 args = parser.parse_args(sys.argv[1:])
 
 
@@ -34,6 +38,9 @@ def main():
     elif args.filling and len(args.filling) > 0:
         symbol, filling_type, form_type, start_date, end_date = args.filling
         update_sec_fillings(symbol, filling_type, form_type, start_date, end_date)
+    elif args.filling_all and len(args.filling_all) > 0:
+        filling_type, form_type, start_date, end_date = args.filling_all
+        update_all_sec_fillings(filling_type, form_type, start_date, end_date)
 
 if __name__ == "__main__":
     main()

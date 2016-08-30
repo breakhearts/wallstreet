@@ -41,18 +41,18 @@ Some configure need be modified in your machine, you need edit `config.json` cre
 ```
 {
     "celery":{
-      "broker_url": "redis://localhost:6379/0"                          /*redis url as celery broker*/
+      "broker_url": "redis://localhost:6379/0"             //redis url as celery broker
     },
     "storage":{                                                         
       "db": "sql",
-      "url": "mysql+pymysql://root@localhost/wallstreet"                /*mysql url as data storage*/
+      "url": "mysql+pymysql://root@localhost/wallstreet"  //mysql url as data storage
     },
-    "log_server": {                                                     /*logger server if you run workers in more than one manchines, logs will send to central log server*/
-      "host": "localhost",                                                      
+    "log_server": {                                       //logger server if you run workers in more than one manchines,
+      "host": "localhost",                                //logs will send to central log server
       "port": 9020
     }
     "edgar":{
-      "core_key": "XXXXX"                                              /*edgar api key if you use edgar api*/
+      "core_key": "XXXXX"                                 //edgar api key if you use edgar api
     }
 }
 ```
@@ -62,3 +62,17 @@ In the root directory, run
 python -m wallstreet.bin.__main__ -h
 ```
 you will see most of the commands available.
+
+And you can use `celery-flower` monitor tasks in http://localhost:5555:
+```bash
+celery -A wallstreet.tasks flower
+```
+
+You can also using use `celery-flower` revoke pending tasks:
+```bash
+celery -A wallstreet.tasks flower purge
+```
+
+Sec fillings use CIKs instead of symbols as the identification of stocks. currently, we use [Edgar-Online API](http://www.edgar-online.com)
+get CIKs from symbols. Application of these key require waiting some days. As an alternative schema, you can use `stock_info_detail.sql` to
+import 4000+ CIKs in your database offline.
