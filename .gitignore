@@ -96,3 +96,5 @@ logs/
 data/
 
 config_local.json
+
+.DS_Store
