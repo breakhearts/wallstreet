@@ -15,9 +15,10 @@ create_sql_table(engine)
 
 
 class RecordFailureTask(Task):
+    abstract = True
     def on_failure(self, exc, task_id, args, kwargs, einfo):
         if einfo:
-            traceback = einfo.exc_info()[-1]
+            traceback = str(einfo)
         else:
             traceback = None
         task_faiure_recorder.on_task_failure(self.name, args, kwargs, traceback)
