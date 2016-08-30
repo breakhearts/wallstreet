@@ -16,7 +16,7 @@ parser.add_argument('--filling', dest="filling",  nargs=5,
                     metavar=("symbol", "filling_type", "form_type", "start_date", "end_date"),
                     help="update sec fillings by symbol")
 parser.add_argument('--filling_all', dest="filling_all",  nargs=4,
-                    metavar=("symbol", "filling_type", "form_type", "start_date", "end_date"),
+                    metavar=("filling_type", "form_type", "start_date", "end_date"),
                     help="update all sec fillings")
 args = parser.parse_args(sys.argv[1:])
 
