@@ -112,6 +112,14 @@ CELERY_ROUTES = {
         'queue': 'sec_tasks',
         'routing_key': 'sec_tasks.update_sec_fillings'
     },
+    'wallstreet.tasks.stock_tasks.update_all_sec_fillings': {
+        'queue': 'sec_tasks',
+        'routing_key': 'sec_tasks.update_all_sec_fillings'
+    },
+    'wallstreet.tasks.stock_tasks.__update_all_sec_fillings': {
+        'queue': 'sec_tasks',
+        'routing_key': 'sec_tasks.__update_all_sec_fillings'
+    },
     'wallstreet.tasks.stock_tasks.download_sec_fillings': {
         'queue': 'sec_tasks',
         'routing_key': 'sec_tasks.download_sec_fillings'
