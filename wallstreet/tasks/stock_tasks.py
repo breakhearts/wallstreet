@@ -4,7 +4,7 @@ from wallstreet.crawler import sec
 from wallstreet.crawler.stockapi import YahooHistoryDataAPI, NasdaqStockInfoAPI, EdgarYearReportAPI, EdgarCompanyAPI
 from wallstreet.tasks.celery import app, RecordFailureTask
 from wallstreet import base
-from wallstreet.tasks.storage_tasks import save_stock_day, load_all_stock_info, save_stock_info
+from wallstreet.tasks.storage_tasks import save_stock_day, load_all_stock_symbols, save_stock_info
 from wallstreet.tasks.storage_tasks import load_last_update_date, save_stock_year_fiscal
 from wallstreet.tasks.storage_tasks import compute_base_index, clear_stock, load_symbols_has_no_year_fiscal_report
 from wallstreet.tasks.storage_tasks import load_symbols_has_no_stock_info_details, save_stock_info_detail
@@ -47,16 +47,15 @@ def update_stock_info(self, exchange):
 
 @app.task(base=RecordFailureTask)
 def update_all_stock_day():
-    load_all_stock_info.apply_async(link=get_all_stock_history.s())
+    load_all_stock_symbols.apply_async(link=get_all_stock_history.s())
 
 
 @app.task(base=RecordFailureTask)
-def get_all_stock_history(stocks):
-    stocks = [base.StockInfo.from_serializable_obj(x) for x in stocks]
-    for stock_info in stocks:
-        load_last_update_date.apply_async((stock_info.symbol, LastUpdateStorage.STOCK_DAY),
-                                          link=update_stock_history.s(stock_info.symbol))
-    logger.debug("ok, len = {0}".format(len(stocks)))
+def get_all_stock_history(symbols):
+    for symbol in symbols:
+        load_last_update_date.apply_async((symbol, LastUpdateStorage.STOCK_DAY),
+                                          link=update_stock_history.s(symbol))
+    logger.debug("ok, len = {0}".format(len(symbols)))
 
 
 @app.task(base=RecordFailureTask)
@@ -123,15 +122,14 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
 
 @app.task(base=RecordFailureTask)
 def update_all_stock_base_index():
-    load_all_stock_info.apply_async(link=get_all_stock_base_index.s())
+    load_all_stock_symbols.apply_async(link=get_all_stock_base_index.s())
 
 
 @app.task(base=RecordFailureTask)
-def get_all_stock_base_index(stocks):
-    stocks = [base.StockInfo.from_serializable_obj(x) for x in stocks]
-    for stock_info in stocks:
-        load_last_update_date.apply_async((stock_info.symbol, LastUpdateStorage.STOCK_BASE_INDEX),
-                                          link=update_stock_base_index.s(stock_info.symbol))
+def get_all_stock_base_index(symbols):
+    for symbol in symbols:
+        load_last_update_date.apply_async((symbol, LastUpdateStorage.STOCK_BASE_INDEX),
+                                          link=update_stock_base_index.s(symbol))
     logger.debug("ok")
 
 
@@ -272,6 +270,19 @@ def update_all_sec_fillings_idx(start_year, start_quarter, end_year, end_quarter
                 break
             update_sec_fillings_idx.apply_async((config.get("sec", "idx_dir"), year, quarter))
             logger.debug("new task, year = {0}, quarter = {1}".format(year, quarter))
+
+
+@app.task(base=RecordFailureTask)
+def update_all_sec_fillings(filling_type="txt", form_type=None, start_date=None, end_date=None):
+    load_all_stock_symbols.apply_async(link=__update_all_sec_fillings.s(filling_type, form_type, start_date, end_date))
+    logger.debug("filling_type = {0}, forme_type = {1}, start_date = {2}, end_date = {3}".
+                 format(filling_type, form_type, start_date, end_date))
+
+
+@app.task(base=RecordFailureTask)
+def __update_all_sec_fillings(symbols, filling_type="txt", form_type=None, start_date=None, end_date=None):
+    for symbol in symbols:
+        update_sec_fillings.apply_async(symbol, filling_type, form_type, start_date, end_date)
 
 
 @app.task(base=RecordFailureTask)

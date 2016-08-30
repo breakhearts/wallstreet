@@ -121,7 +121,7 @@ CELERY_ROUTES = {
         'routing_key': 'sec_tasks.download_filling'
     },
     #storage read
-    'wallstreet.tasks.storage_tasks.load_all_stock_info': {
+    'wallstreet.tasks.storage_tasks.load_all_stock_symbols': {
         'queue': 'storage_tasks.read',
         'routing_key': 'storage_tasks.read'
     },

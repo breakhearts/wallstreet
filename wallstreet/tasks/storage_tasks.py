@@ -14,10 +14,10 @@ logger = get_task_logger(__name__)
 
 
 @app.task(base=RecordFailureTask)
-def load_all_stock_info():
+def load_all_stock_symbols():
     stock_info_storage = StockInfoSqlStorage(engine, Session)
     stock_infos = stock_info_storage.load_all()
-    return [x.serializable_obj() for x in stock_infos]
+    return [x.symbol for x in stock_infos]
 
 
 @app.task(base=RecordFailureTask)
