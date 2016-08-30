@@ -323,7 +323,7 @@ def print_args(obj):
 
     if isinstance(obj, (int, float)):
         return print_number(obj)
-    elif isinstance(obj, str):
+    elif isinstance(obj, type("")):
         return print_str(obj)
     elif isinstance(obj, tuple):
         return "({0})".format(print_iterable(obj))

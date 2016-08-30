@@ -282,7 +282,7 @@ def update_all_sec_fillings(filling_type="txt", form_type=None, start_date=None,
 @app.task(base=RecordFailureTask)
 def __update_all_sec_fillings(symbols, filling_type="txt", form_type=None, start_date=None, end_date=None):
     for symbol in symbols:
-        update_sec_fillings.apply_async(symbol, filling_type, form_type, start_date, end_date)
+        update_sec_fillings.apply_async((symbol, filling_type, form_type, start_date, end_date))
 
 
 @app.task(base=RecordFailureTask)
