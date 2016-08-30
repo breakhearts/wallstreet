@@ -314,22 +314,13 @@ def print_args(obj):
             t += "{0}:{1}".format(print_args(k), print_args(v))
         return t
 
-    def print_object(obj):
-        name = type(obj).__name__
-        if not hasattr(obj, "__dict__"):
-            return "{0}(...)".format(name)
-        else:
-            return "{0}({1})".format(name, print_dict(obj.__dict__))
-
     if isinstance(obj, (int, float)):
         return print_number(obj)
-    elif isinstance(obj, type("")):
-        return print_str(obj)
     elif isinstance(obj, tuple):
         return "({0})".format(print_iterable(obj))
     elif isinstance(obj, list):
         return "[{0}]".format(print_iterable(obj))
     elif isinstance(obj, dict):
         return "{" + print_dict(obj) + "}"
-    elif isinstance(obj, object):
-        return print_object(obj)
+    else:
+        return print_str(obj)
