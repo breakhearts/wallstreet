@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from wallstreet.storage import StockDaySqlStorage, StockInfoSqlStorage, LastUpdateSqlStorage, BaseIndexSqlStorage
 from wallstreet.storage import LastUpdateStorage, RawYearFiscalReportSqlStorage, StockInfoDetailSqlStorage
 from wallstreet.storage import SECFillingSqlStorage
-from wallstreet.tasks.celery import app, engine, Session
+from wallstreet.tasks.celery import app, engine, Session, RecordFailureTask
 from celery.utils.log import get_task_logger
 from wallstreet.base import StockDay, StockInfo, BaseIndex, RawFiscalReport, StockInfoDetail
 import traceback
@@ -13,14 +13,14 @@ from collections import defaultdict
 logger = get_task_logger(__name__)
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def load_all_stock_info():
     stock_info_storage = StockInfoSqlStorage(engine, Session)
     stock_infos = stock_info_storage.load_all()
     return [x.serializable_obj() for x in stock_infos]
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def save_stock_day(stock_days):
     stock_days = [StockDay.from_serializable_obj(x) for x in stock_days]
     if len(stock_days) > 0:
@@ -38,7 +38,7 @@ def save_stock_day(stock_days):
         logger.debug("ok, symbol = {0}".format(stock_days[0].symbol))
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def load_last_update_date(symbol, date_type):
     storage = LastUpdateSqlStorage(engine, Session)
     t = storage.load(symbol, date_type)
@@ -46,7 +46,7 @@ def load_last_update_date(symbol, date_type):
     return t is None and "1970-01-01" or t.strftime("%Y-%m-%d")
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def save_stock_info(stock_infos):
     stock_infos = [StockInfo.from_serializable_obj(x) for x in stock_infos]
     if len(stock_infos) > 0:
@@ -59,7 +59,7 @@ def save_stock_info(stock_infos):
         logger.debug("ok, exchange = {0}".format(stock_infos[0].exchange))
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def load_last_stock_days(symbol, limit, end_date):
     end_date = parse(end_date)
     storage = StockDaySqlStorage(engine, Session)
@@ -68,7 +68,7 @@ def load_last_stock_days(symbol, limit, end_date):
     return [x.serializable_obj() for x in stock_days]
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def compute_base_index(symbol, limit, last_update_date, end_date):
     last_update_date = parse(last_update_date)
     end_date = parse(end_date)
@@ -98,7 +98,7 @@ def compute_base_index(symbol, limit, last_update_date, end_date):
     save_stock_base_index(base_indexs)
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def save_stock_base_index(stock_base_indexs):
     stock_base_indexs = [BaseIndex.from_serializable_obj(x) for x in stock_base_indexs]
     if len(stock_base_indexs) > 0:
@@ -116,7 +116,7 @@ def save_stock_base_index(stock_base_indexs):
         logger.debug("ok, symbol = {0}".format(stock_base_indexs[0].symbol))
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def clear_stock(symbol):
     storage = StockDaySqlStorage(engine, Session)
     storage.delete(symbol)
@@ -125,7 +125,7 @@ def clear_stock(symbol):
     logger.debug("ok, symbol ={0}".find(symbol))
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def save_stock_year_fiscal(reports):
     reports = [RawFiscalReport.from_serializable_obj(x) for x in reports]
     if len(reports) > 0:
@@ -141,7 +141,7 @@ def save_stock_year_fiscal(reports):
         logger.debug("ok,{0}".format(counter))
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def load_symbols_has_no_year_fiscal_report():
     fiscal_storage = RawYearFiscalReportSqlStorage(engine, Session)
     symbols = fiscal_storage.load_symbols()
@@ -155,7 +155,7 @@ def load_symbols_has_no_year_fiscal_report():
     return ret
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def load_symbols_has_no_stock_info_details():
     detail_storage = StockInfoDetailSqlStorage(engine, Session)
     details = detail_storage.load_all()
@@ -169,7 +169,7 @@ def load_symbols_has_no_stock_info_details():
     return ret
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def save_stock_info_detail(details):
     details = [StockInfoDetail.from_serializable_obj(x) for x in details]
     if len(details) > 0:
@@ -182,7 +182,7 @@ def save_stock_info_detail(details):
         logger.debug("ok")
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def save_stock_fillings_idx(fillings):
     fillings = [base.SECFilling.from_serializable_obj(x) for x in fillings]
     if len(fillings) > 0:
@@ -195,7 +195,7 @@ def save_stock_fillings_idx(fillings):
             raise
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def load_sec_fillings_idx(symbol, form_type=None, start_date=None, end_date=None):
     storage = StockInfoDetailSqlStorage(engine, Session)
     detail = storage.load(symbol)

@@ -38,9 +38,9 @@ CELERY_LOGGING = {
             'handlers': ['socket'],
             'level': 'DEBUG'
         },
-        'wallstreet.tasks.task_monitor': {
-            'handlers': ['console'],
-            'level': 'DEBUG'
+        'task_failure': {
+            'handlers': ['socket'],
+            'level': 'ERROR'
         }
     }
 }
@@ -74,6 +74,14 @@ LOGGING = {
             'filename': os.path.join(LOG_ROOT, "storage_tasks.log"),
             'when': "D",
             'interval': 1
+        },
+        'task_failure': {
+            'formatter': 'normal',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'level': "ERROR",
+            'filename': os.path.join(LOG_ROOT, "task_failure.log"),
+            'when': "D",
+            'interval': 1
         }
     },
     'loggers': {
@@ -84,6 +92,10 @@ LOGGING = {
         'wallstreet.tasks.storage_tasks': {
             'handlers': ['console', 'storage_tasks'],
             'level': 'DEBUG'
+        },
+        'task_failure': {
+            'handlers': ['console', 'task_failure'],
+            'level': 'ERROR'
         }
     }
 }

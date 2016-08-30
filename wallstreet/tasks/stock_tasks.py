@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from wallstreet.crawler.fetcher import RequestsFetcher
 from wallstreet.crawler import sec
 from wallstreet.crawler.stockapi import YahooHistoryDataAPI, NasdaqStockInfoAPI, EdgarYearReportAPI, EdgarCompanyAPI
-from wallstreet.tasks.celery import app
+from wallstreet.tasks.celery import app, RecordFailureTask
 from wallstreet import base
 from wallstreet.tasks.storage_tasks import save_stock_day, load_all_stock_info, save_stock_info
 from wallstreet.tasks.storage_tasks import load_last_update_date, save_stock_year_fiscal
@@ -11,8 +11,6 @@ from wallstreet.tasks.storage_tasks import load_symbols_has_no_stock_info_detail
 from wallstreet.tasks.storage_tasks import save_stock_fillings_idx, load_sec_fillings_idx
 from celery.utils.log import get_task_logger
 from wallstreet.storage import LastUpdateStorage
-#from wallstreet.tasks.task_monitor import task_counter
-from wallstreet.notification.notifier import email_notifier
 from celery.exceptions import Ignore
 from dateutil.parser import parse
 from wallstreet import config
@@ -21,7 +19,7 @@ import traceback
 logger = get_task_logger(__name__)
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def update_all_stock_info():
     update_stock_info.apply_async(("NASDAQ",), link=save_stock_info.s())
     update_stock_info.apply_async(("NYSE",), link=save_stock_info.s())
@@ -29,7 +27,7 @@ def update_all_stock_info():
     logger.debug("update all ok")
 
 
-@app.task(bind=True, max_retries=10, default_retry_delay=30)
+@app.task(base=RecordFailureTask, bind=True, max_retries=10, default_retry_delay=30)
 def update_stock_info(self, exchange):
     api = NasdaqStockInfoAPI()
     url, method, headers, data = api.get_url_params(exchange)
@@ -47,12 +45,12 @@ def update_stock_info(self, exchange):
         raise self.retry(exc=exc)
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def update_all_stock_day():
     load_all_stock_info.apply_async(link=get_all_stock_history.s())
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def get_all_stock_history(stocks):
     stocks = [base.StockInfo.from_serializable_obj(x) for x in stocks]
     for stock_info in stocks:
@@ -61,7 +59,7 @@ def get_all_stock_history(stocks):
     logger.debug("ok, len = {0}".format(len(stocks)))
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def update_stock_history(last_update_date, symbol):
     if base.get_last_after_hour_date() == last_update_date:
         logger.debug("fresh data, no need update, symbol={0}".format(symbol))
@@ -74,7 +72,7 @@ def update_stock_history(last_update_date, symbol):
         get_stock_history.apply_async((symbol, None, None, None, False, None), link=save_stock_day.s())
 
 
-@app.task(bind=True, max_retries=3, default_retry_delay=30)
+@app.task(base=RecordFailureTask, bind=True, max_retries=3, default_retry_delay=30)
 def get_stock_history(self, symbol, start_date=None, end_date=None, check_dividend=False, last_no_dividend=None,
                       timeout=config.get("fetcher", "timeout")):
     api = YahooHistoryDataAPI()
@@ -123,22 +121,12 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
     return [x.serializable_obj() for x in ret]
 
 
-@app.task
-def report_tasks():
-    t = task_counter.report()
-    s = ""
-    for item, count in t.items():
-        s += "{0}\t{1}<br>".format(item, count)
-    email_notifier.send_text("wallstreet daily report", s)
-    task_counter.reset()
-
-
-@app.task
+@app.task(base=RecordFailureTask)
 def update_all_stock_base_index():
     load_all_stock_info.apply_async(link=get_all_stock_base_index.s())
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def get_all_stock_base_index(stocks):
     stocks = [base.StockInfo.from_serializable_obj(x) for x in stocks]
     for stock_info in stocks:
@@ -147,7 +135,7 @@ def get_all_stock_base_index(stocks):
     logger.debug("ok")
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def update_stock_base_index(last_update_date, symbol):
     last_update_date = parse(last_update_date)
     last_after_hour_date = base.get_last_after_hour_date()
@@ -160,12 +148,12 @@ def update_stock_base_index(last_update_date, symbol):
     logger.debug("ok, symbol = {0}, last_update_date = {1}".format(symbol, last_update_date))
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def update_all_year_fiscal_report():
     load_symbols_has_no_year_fiscal_report.apply_async(link=get_all_stock_year_fiscal.s())
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def get_all_stock_year_fiscal(symbols):
     logger.debug("len = {0}".format(len(symbols)))
     batch_size = 5
@@ -179,7 +167,7 @@ def get_all_stock_year_fiscal(symbols):
         get_stock_year_fiscal.apply_async((t,), link=save_stock_year_fiscal.s())
 
 
-@app.task(bind=True, max_retries=3, default_retry_delay=30)
+@app.task(base=RecordFailureTask, bind=True, max_retries=3, default_retry_delay=30)
 def get_stock_year_fiscal(self, symbols, timeout=30):
     logger.debug("symbols={0}".format(symbols))
     api = EdgarYearReportAPI(config.get("edgar", "core_key"))
@@ -204,12 +192,12 @@ def get_stock_year_fiscal(self, symbols, timeout=30):
     return [x.serializable_obj() for x in ret]
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def update_all_stock_info_details():
     load_symbols_has_no_stock_info_details.apply_async(link=get_all_stock_info_details.s())
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def get_all_stock_info_details(symbols):
     logger.debug("len = {0}".format(len(symbols)))
     batch_size = 20
@@ -223,7 +211,7 @@ def get_all_stock_info_details(symbols):
         get_stock_info_details.apply_async((t,), link=save_stock_info_detail.s())
 
 
-@app.task(bind=True, max_retries=3, default_retry_delay=30)
+@app.task(base=RecordFailureTask, bind=True, max_retries=3, default_retry_delay=30)
 def get_stock_info_details(self, symbols, timeout=30):
     logger.debug("symbols={0}".format(symbols))
     api = EdgarCompanyAPI(config.get("edgar", "core_key"))
@@ -248,7 +236,7 @@ def get_stock_info_details(self, symbols, timeout=30):
     return [x.serializable_obj() for x in ret]
 
 
-@app.task(bind=True, max_retries=3, default_retry_delay=30)
+@app.task(base=RecordFailureTask, bind=True, max_retries=3, default_retry_delay=30)
 def update_sec_fillings_idx(self, data_dir, year, quarter):
     crawler = sec.SECCrawler(data_dir)
     try:
@@ -274,7 +262,7 @@ def update_sec_fillings_idx(self, data_dir, year, quarter):
             raise self.retry(exc=exc)
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def update_all_sec_fillings_idx(start_year, start_quarter, end_year, end_quarter):
     for year in range(start_year, end_year + 1):
         for quarter in range(1, 5):
@@ -286,20 +274,20 @@ def update_all_sec_fillings_idx(start_year, start_quarter, end_year, end_quarter
             logger.debug("new task, year = {0}, quarter = {1}".format(year, quarter))
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def update_sec_fillings(symbol, filling_type="txt", form_type=None, start_date=None, end_date=None):
     load_sec_fillings_idx.apply_async((symbol, form_type, start_date, end_date), link=download_sec_fillings.s(filling_type))
     logger.debug("ok, symbol = {0}, filling_type = {1}, forme_type = {2}, start_date = {3}, end_date = {4}".
                  format(symbol, filling_type, form_type, start_date, end_date))
 
 
-@app.task
+@app.task(base=RecordFailureTask)
 def download_sec_fillings(fillings, filling_type):
     for filling in fillings:
         download_filling.apply_async((filling, filling_type))
 
 
-@app.task(bind=True, max_retries=3, default_retry_delay=30)
+@app.task(base=RecordFailureTask, bind=True, max_retries=3, default_retry_delay=30)
 def download_filling(self, filling, filling_type):
     filling = base.SECFilling.from_serializable_obj(filling)
     crawler = sec.SECCrawler(config.get_path("sec", "data_dir"))
