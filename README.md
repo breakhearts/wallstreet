@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/breakhearts/wallstreet.svg?branch=master)](https://travis-ci.org/breakhearts/wallstreet)
 
 Wallstreet is a smallest stock deal data collect and analyze system. There are many project aim to crawl and analyze nasdaq stock trading data by wrapping yahoo or nasdaq APIs,
-but there're seldom one which provide the complete crawler solution. The ugly work eg. server logging, how to face poor network condition, store date into database may take times to debug.
+but there're seldom one which provide the complete crawler solution. The ugly work eg. how to face poor network condition, how to store into database, how to monitor the tasks may take times.
 Wallstreet will provide a lightweight, distributed, incrementally crawler system help you construct your local nasdaq stock database.
 
 ## Requirements
