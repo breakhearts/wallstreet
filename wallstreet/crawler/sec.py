@@ -3,7 +3,6 @@ from wallstreet import base
 from wallstreet.crawler.fetcher import CurlFetcher
 from wallstreet.crawler.stockapi import SECAPI
 import os
-from xbrl import XBRLParser, GAAP, GAAPSerializer
 
 class SECCrawler(object):
     def __init__(self, data_dir):
