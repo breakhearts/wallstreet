@@ -305,7 +305,7 @@ def download_filling(self, filling, filling_type):
     try:
         if filling_type == "txt":
             status_code = crawler.download_txt_filling(filling)
-        elif filling_type == "xlbr":
+        elif filling_type == "xbrl":
             status_code = crawler.download_xbrl_filling(filling)
         if status_code != 200:
             logger.debug("cik = {0}, id = {1}, status_code = {2}".format(filling.cik, filling.id, status_code))
