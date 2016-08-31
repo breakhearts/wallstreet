@@ -3,7 +3,7 @@ from wallstreet import base
 from wallstreet.crawler.fetcher import CurlFetcher
 from wallstreet.crawler.stockapi import SECAPI
 import os
-
+from xbrl import XBRLParser, GAAP, GAAPSerializer
 
 class SECCrawler(object):
     def __init__(self, data_dir):
@@ -43,7 +43,7 @@ class SECCrawler(object):
             return 200
         base.wise_mk_dir_for_file(filename)
         api = SECAPI()
-        url, method, headers, data = api.txt__url_params(filling.cik, filling.id)
+        url, method, headers, data = api.txt_url_params(filling.cik, filling.id)
         fetcher = CurlFetcher(60)
         status_code = fetcher.fetch_to_file(url, method, headers, data, filename, resume_broken_downloads=False)
         return status_code

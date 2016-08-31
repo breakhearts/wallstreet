@@ -277,12 +277,9 @@ class SECAPI(object):
         api = 'http://www.sec.gov/Archives/edgar/data/{0}/{1}/{2}-xbrl.zip'.format(cik, _id.replace('-', ''), _id)
         return api, "GET", {"user-agent": base.random_ua()}, {}
 
-    def txt__url_params(self, cik, _id):
+    def txt_url_params(self, cik, _id):
         api = 'http://www.sec.gov/Archives/edgar/data/{0}/{1}/{2}.txt'.format(cik, _id.replace('-', ''), _id)
         return api, "GET", {"user-agent": base.random_ua()}, {}
-
-
-
 
 
 
