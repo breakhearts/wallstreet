@@ -68,9 +68,9 @@ And you can use `celery-flower` monitor tasks in http://localhost:5555:
 celery -A wallstreet.tasks flower
 ```
 
-You can also using use `celery-flower` revoke pending tasks:
+You can also using use `celery purge` revoke pending tasks:
 ```bash
-celery -A wallstreet.tasks flower purge
+celery -A wallstreet.tasks purge
 ```
 
 Sec fillings use CIKs instead of symbols as the identification of stocks. currently, we use [Edgar-Online API](http://www.edgar-online.com)
