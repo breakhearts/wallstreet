@@ -9,4 +9,3 @@ python-dateutil>=2.5.3
 Mailthon>=0.1.1
 pycurl>=7.43.0
 certifi>=2016.8.8
-python-xbrl
