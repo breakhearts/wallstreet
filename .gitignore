@@ -97,4 +97,4 @@ data/
 
 config_local.json
 
-.DS_Store
+*.DS_Store
