@@ -60,11 +60,11 @@ def get_all_stock_history(symbols):
 
 @app.task(base=RecordFailureTask)
 def update_stock_history(last_update_date, symbol):
-    if base.get_last_after_hour_date() == last_update_date:
-        logger.debug("fresh data, no need update, symbol={0}".format(symbol))
-        return
     if last_update_date is not None:
         last_update_date = parse(last_update_date)
+        if base.get_last_after_hour_date().date() == last_update_date.date():
+            logger.debug("fresh data, no need update, symbol={0}".format(symbol))
+            return
         get_stock_history.apply_async((symbol, base.get_next_day_str(last_update_date), None, True,
                                        base.get_day_str(last_update_date)), link=save_stock_day.s())
     else:
@@ -82,7 +82,6 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
         real_start_date = start_date
     url, method, headers, data = api.get_url_params(symbol, real_start_date, end_date)
     fetcher = RequestsFetcher(timeout=timeout)
-    #task_counter.new("HISTORY_TASKS")
     try:
         status_code, content = fetcher.fetch(url, method, headers, data)
         if status_code != 200:
@@ -109,7 +108,6 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
                         break
             ret = ret[start_index:]
         logger.debug("ok, symbol={0}, total={1}".format(symbol, len(ret)))
-        #task_counter.succeeded("HISTORY_TASKS")
     except Exception as exc:
         if isinstance(exc, Ignore):
             raise exc
