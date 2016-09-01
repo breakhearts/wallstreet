@@ -14,7 +14,10 @@ from wallstreet.storage import LastUpdateStorage
 from celery.exceptions import Ignore
 from dateutil.parser import parse
 from wallstreet import config
+import os
+from wallstreet.logging.config import LOG_ROOT
 import traceback
+import tailer
 
 logger = get_task_logger(__name__)
 
@@ -317,3 +320,20 @@ def download_filling(self, filling, filling_type):
         else:
             logger.error("cik = {0}, id = {1}".format(filling.cik, filling.id, traceback.format_exc()))
             raise self.retry(exc=exc)
+
+
+class TaskFailureError(Exception):
+    def __init__(self, last_trace_back):
+        self.last_trace_back = last_trace_back
+
+    def __str__(self):
+        return self.last_trace_back
+
+
+@app.task(send_error_emails=True)
+def test_failure_task():
+    p = os.path.join(LOG_ROOT, "task_failure.log")
+    if os.path.exists(p) and os.path.getsize(p) > 0:
+        with open(p, "r") as f:
+            lines = tailer.tail(f, 50)
+            raise TaskFailureError("\r\n".join(lines))

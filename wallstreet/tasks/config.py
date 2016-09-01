@@ -25,6 +25,10 @@ CELERYBEAT_SCHEDULE = {
     'update_all_stock_base_index': {
         'task': 'wallstreet.tasks.stock_tasks.update_all_stock_base_index',
         'schedule': crontab(hour=4, minute=0, day_of_week='1-5')
+    },
+    'test_failure_task': {
+        'task': 'wallstreet.tasks.stock_tasks.test_failure_task',
+        'schedule': crontab(hour=6, minute=0, day_of_week='0-6')
     }
 }
 
@@ -36,6 +40,18 @@ CELERY_QUEUES = (
     Queue('storage_tasks.write', Exchange('storage_tasks.write', type='topic'), routing_key='storage_tasks.write'),
     Queue('sec_tasks', Exchange('sec_tasks', type='topic'), routing_key='sec_tasks.#')
 )
+
+# Name and email addresses of recipients
+ADMINS = zip(config.get("email", "receivers"), config.get("email", "receivers"))
+
+# Email address used as sender (From field).
+SERVER_EMAIL = config.get("email", "sender")
+
+# Mailserver configuration
+EMAIL_HOST = config.get("email", "host")
+EMAIL_PORT = config.get_int("email", "port")
+EMAIL_HOST_USER = config.get("email", "username")
+EMAIL_HOST_PASSWORD = config.get("email", "password")
 
 CELERY_ROUTES = {
     #history
@@ -98,6 +114,10 @@ CELERY_ROUTES = {
     'wallstreet.tasks.stock_tasks.get_stock_info_details': {
         'queue': 'stock_tasks',
         'routing_key': 'stock_tasks.get_stock_info_details'
+    },
+    'wallstreet.tasks.stock_tasks.test_failure_task': {
+        'queue': 'stock_tasks',
+        'routing_key': 'stock_tasks.test_failure_task'
     },
     #sec
     'wallstreet.tasks.stock_tasks.update_sec_fillings_idx': {
