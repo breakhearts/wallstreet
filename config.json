@@ -15,12 +15,11 @@
       "host": "localhost",
       "port": 9020
     },
-    "notifier":{
-      "type": "email",
+    "email":{
       "host":"smtp.163.com",
       "port":25,
       "username": "xxx",
-      "password": "xxxxxxxx",
+      "password": "xxx",
       "sender": "xxx@163.com",
       "receivers": [
         "xxx@163.com"
