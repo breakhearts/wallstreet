@@ -99,7 +99,7 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
                 if t.date.strftime("%Y%m%d") == last_no_dividend:
                     if t.adj_factor != 1.0:
                         logger.debug("found dividend, symbol={0}".format(symbol))
-                        clear_stock.apply_async((symbol, ), link=get_stock_history.s(symbol, None, None, False, None, timeout, immutable=True))
+                        clear_stock.apply_async((symbol, ), link=get_stock_history.si(symbol, None, None, False, None, timeout))
                         return get_stock_history((symbol,))
                     if real_start_date < last_no_dividend:
                         break
