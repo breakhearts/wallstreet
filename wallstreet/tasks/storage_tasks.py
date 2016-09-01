@@ -122,7 +122,7 @@ def clear_stock(symbol):
     storage.delete(symbol)
     storage = BaseIndexSqlStorage(engine_Session.engine, engine_Session.Session)
     storage.delete(symbol)
-    logger.debug("ok, symbol ={0}".find(symbol))
+    logger.debug("ok, symbol ={0}".format(symbol))
 
 
 @app.task(base=RecordFailureTask)
