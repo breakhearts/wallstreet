@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from wallstreet.crawler import stockapi
-from wallstreet.crawler.fetcher import RequestsFetcher
+from wallstreet.crawler.fetcher import CurlFetcher
 from datetime import datetime
 from wallstreet import config
 
@@ -17,7 +17,7 @@ class TestYahooStockHistoryAPI:
     def test_parse_ret(self):
         api = stockapi.YahooHistoryDataAPI()
         url, method, headers, data = api.get_url_params("BIDU", start_date="20150218", end_date="20150220")
-        fetcher = RequestsFetcher()
+        fetcher = CurlFetcher()
         status_code, content = fetcher.fetch(url, method, headers, data)
         assert status_code == 200
         days = api.parse_ret("BIDU", content)
@@ -31,7 +31,7 @@ class TestNasdaqStockInfoAPI:
     def test_all(self):
         api = stockapi.NasdaqStockInfoAPI()
         url, method, headers, data = api.get_url_params("NASDAQ")
-        fetcher = RequestsFetcher()
+        fetcher = CurlFetcher()
         status_code, content = fetcher.fetch(url, method, headers, data)
         stock_infos = api.parse_ret("NASDAQ", content)
         assert len(stock_infos) > 100
@@ -41,7 +41,7 @@ class TestEdgarAPI:
     def test_year_fiscal_report(self):
         api = stockapi.EdgarYearReportAPI(config.get_test("edgar", "core_key"))
         url, method, headers, data = api.get_url_params(["BIDU", "AAPL"], start_year=2011, end_year=2012)
-        fetcher = RequestsFetcher(timeout=30)
+        fetcher = CurlFetcher(timeout=30)
         status_code, content = fetcher.fetch(url, method, headers, data)
         raw_report = api.parse_ret(content)
         assert len(raw_report) == 4
@@ -49,7 +49,7 @@ class TestEdgarAPI:
     def test_quarter_fiscal_report(self):
         api = stockapi.EdgarQuarterReportAPI(config.get_test("edgar", "core_key"))
         url, method, headers, data = api.get_url_params("FB", start_year=2014, end_year=2015, start_quarter=3, end_quarter=1)
-        fetcher = RequestsFetcher(timeout=30)
+        fetcher = CurlFetcher(timeout=30)
         status_code, content = fetcher.fetch(url, method, headers, data)
         raw_report = api.parse_ret(content)
         assert len(raw_report) == 3
@@ -57,7 +57,7 @@ class TestEdgarAPI:
     def test_company_report(self):
         api = stockapi.EdgarCompanyAPI(config.get_test("edgar", "core_key"))
         url, method, headers, data = api.get_url_params(["BIDU", "BABA"])
-        fetcher = RequestsFetcher(timeout=30)
+        fetcher = CurlFetcher(timeout=30)
         status_code, content = fetcher.fetch(url, method, headers, data)
         t = api.parse_ret(content)
         assert len(t) == 2

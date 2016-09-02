@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from wallstreet.crawler.fetcher import RequestsFetcher
+from wallstreet.crawler.fetcher import CurlFetcher
 from wallstreet.crawler import sec
 from wallstreet.crawler.stockapi import YahooHistoryDataAPI, NasdaqStockInfoAPI, EdgarYearReportAPI, EdgarCompanyAPI
 from wallstreet.tasks.celery import app, RecordFailureTask
@@ -34,7 +34,7 @@ def update_all_stock_info():
 def update_stock_info(self, exchange):
     api = NasdaqStockInfoAPI()
     url, method, headers, data = api.get_url_params(exchange)
-    fetcher = RequestsFetcher()
+    fetcher = CurlFetcher()
     try:
         status_code, content = fetcher.fetch(url, method, headers, data)
         if status_code != 200:
@@ -84,7 +84,7 @@ def get_stock_history(self, symbol, start_date=None, end_date=None, check_divide
     else:
         real_start_date = start_date
     url, method, headers, data = api.get_url_params(symbol, real_start_date, end_date)
-    fetcher = RequestsFetcher(timeout=timeout)
+    fetcher = CurlFetcher(timeout=timeout)
     try:
         status_code, content = fetcher.fetch(url, method, headers, data)
         if status_code != 200:
@@ -171,7 +171,7 @@ def get_stock_year_fiscal(self, symbols, timeout=30):
     api = EdgarYearReportAPI(config.get("edgar", "core_key"))
     url, method, headers, data = api.get_url_params(symbols=symbols, start_year=1970, end_year=9999)
     try:
-        fetcher = RequestsFetcher(timeout=timeout)
+        fetcher = CurlFetcher(timeout=timeout)
         status_code, content = fetcher.fetch(url, method, headers, data)
         if status_code != 200:
             logger.debug("status_code={0}".format(status_code))
@@ -215,7 +215,7 @@ def get_stock_info_details(self, symbols, timeout=30):
     api = EdgarCompanyAPI(config.get("edgar", "core_key"))
     url, method, headers, data = api.get_url_params(symbols=symbols)
     try:
-        fetcher = RequestsFetcher(timeout=timeout)
+        fetcher = CurlFetcher(timeout=timeout)
         status_code, content = fetcher.fetch(url, method, headers, data)
         if status_code != 200:
             logger.debug("status_code={0}".format(status_code))
